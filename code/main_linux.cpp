@@ -1,57 +1,114 @@
 
-#include "stdio.h"
-#include "X11/Xlib.h"
+#include "common.h"
+#include "game_math.h"
+#include "main.h"
+
+#include <stdio.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include "main_linux.h"
 
 bool IsRunning = 1;
 
-int main() {
-	printf("hello sailor!\n");
-	
-	Display* display = XOpenDisplay(0);
-	
-	if (!display) {
-		printf("tpc has failed us, we didn't get a window\n");
-		return 1;
-	}
-	
-	int rootWindow = DefaultRootWindow(display);
-	int defaultScreen = DefaultScreen(display);
-	
-	XVisualInfo visualInfo = {};
-	if (!XMatchVisualInfo(display, defaultScreen, 24, TrueColor, &visualInfo)) {
-		printf("No match returned of tpc");
-		return 1;
-	}
-	
-	XSetWindowAttributes windowAttributes = {};
-	windowAttributes.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone);
-	windowAttributes.event_mask = StructureNotifyMask;
-	
-	Window window = XCreateWindow(display, rootWindow, 0, 0, 540, 480, 0, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
-	
-	if (!window) {
-		printf("tpc request to create window failed");
-		return 1;
-	}
-	
-	XStoreName(display, window, "Devilless");
-	XMapWindow(display, window);
-	XFlush(display);
-	
-	while(IsRunning) {
-		XEvent event = {};
-		while (XPending(display) > 0) {
-			XNextEvent(display, &event);
-			switch(event.type) {
-				case DestroyNotify:
+void ProcessMessages(XState* xState, GameInput* gameInput) {
+	XEvent event = {};
+	while (XPending(xState->display) > 0) {
+		XNextEvent(xState->display, &event);
+		switch (event.type) {
+			case DestroyNotify: {
 				XDestroyWindowEvent *e = (XDestroyWindowEvent *)&event;
-				if (e->window == window)
+				if (e->window == xState->window)
 					IsRunning = 0;
+				break;
+			}
+			case ClientMessage: {
+				XClientMessageEvent *e = (XClientMessageEvent *)&event;
+				if ((Atom)e->data.l[0] == xState->atomDeleteWindow)
+				{
+					IsRunning = 0;
+				}
+				break;
+			}
+			case KeyPress: {
+				XKeyPressedEvent *e = (XKeyPressedEvent *)&event;
+				
+				*e = {};
+				
 				break;
 			}
 		}
 	}
+}
+
+bool InitX(XState* xState) {
+	xState->display = XOpenDisplay(0);
+	
+	if (!xState->display) {
+		printf("Error: failed to open X11 display.\n");
+		return 0;
+	}
+	
+	xState->rootWindow = DefaultRootWindow(xState->display);
+	xState->defaultScreen = DefaultScreen(xState->display);
+	
+	XVisualInfo visualInfo = {};
+	if (!XMatchVisualInfo(xState->display, xState->defaultScreen, 24, TrueColor, &visualInfo)) {
+		printf("Error: X11 couldn't match requested visual info.\n");
+		return 0;
+	}
+	
+	XSetWindowAttributes windowAttributes = {};
+	windowAttributes.colormap = XCreateColormap(xState->display, xState->rootWindow, visualInfo.visual, AllocNone);
+	windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask;
+	
+	xState->window = XCreateWindow(xState->display, xState->rootWindow, 0, 0, 540, 480, 0, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
+	
+	if (!xState->window) {
+		printf("Error: failed to create window.\n");
+		return 0;
+	}
+	
+	XStoreName(xState->display, xState->window, "Devilless");
+	XMapWindow(xState->display, xState->window);
+	XFlush(xState->display);
+	
+	xState->atomDeleteWindow = XInternAtom(xState->display, "WM_DELETE_WINDOW", False);
+	if (!XSetWMProtocols(xState->display, xState->rootWindow, &xState->atomDeleteWindow, 1))
+		printf("Warning: request to handle window deletion failed.\n");
+	
+	return 1;
+}
+
+int main() {
+	printf("hello sailor!\n");
+	
+	XState* xState = new XState();
+	if (!InitX(xState))
+		return 1;
+	
+	GameInput* gameInput = new GameInput();
+	
+	while (IsRunning) {
+		for (u32 i = 0; i < ArrayCount(gameInput->key); i++)
+		{
+			gameInput->key[i].count = 0;
+		}
+		
+		ProcessMessages(xState, gameInput);
+		
+		/*if (activeWindow)
+		{
+			gameInput->mousePos = ;
+		}
+		else
+		{
+			ClearInput();
+		}*/
+		
+		
+	}
+	
+	XDestroyWindow(xState->display, xState->window);
 	
 	return 0;
 }
