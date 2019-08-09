@@ -1,6 +1,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 typedef int8_t i8;
 typedef uint8_t u8;
@@ -19,5 +20,6 @@ typedef size_t uSize;
 #define Gigabytes(Value) (Megabytes(Value)*1024LL)
 #define Terabytes(Value) (Gigabytes(Value)*1024LL)
 
+#define Alloc(type) (type *)calloc(1, sizeof(type))
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 #define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}

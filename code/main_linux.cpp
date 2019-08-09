@@ -4,43 +4,56 @@
 #include "main.h"
 
 #include <stdio.h>
+#include "main.cpp"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "main_linux.h"
 
 bool IsRunning = 1;
 
-void ProcessMessages(XState* xState, GameInput* gameInput) {
+void ProcessInput(InputKey *inputKey, bool isDown) {
+	if (inputKey->isDown != isDown) {
+		inputKey->isDown = isDown;
+		inputKey->count++;
+	}
+}
+
+void ProcessMessages(XState *xState, GameInput *gameInput) {
 	XEvent event = {};
 	while (XPending(xState->display) > 0) {
 		XNextEvent(xState->display, &event);
 		switch (event.type) {
-			case DestroyNotify: {
+			case DestroyNotify:
+			{
 				XDestroyWindowEvent *e = (XDestroyWindowEvent *)&event;
 				if (e->window == xState->window)
 					IsRunning = 0;
 				break;
 			}
-			case ClientMessage: {
+			case ClientMessage:
+			{
 				XClientMessageEvent *e = (XClientMessageEvent *)&event;
 				if ((Atom)e->data.l[0] == xState->atomDeleteWindow)
-				{
 					IsRunning = 0;
-				}
 				break;
 			}
-			case KeyPress: {
+			case KeyPress:
+			{
 				XKeyPressedEvent *e = (XKeyPressedEvent *)&event;
-				
-				*e = {};
-				
+				ProcessInput(&gameInput->key[e->keycode], 1);
+				break;
+			}
+			case KeyRelease:
+			{
+				XKeyPressedEvent *e = (XKeyPressedEvent *)&event;
+				ProcessInput(&gameInput->key[e->keycode], 0);
 				break;
 			}
 		}
 	}
 }
 
-bool InitX(XState* xState) {
+bool InitX(XState *xState) {
 	xState->display = XOpenDisplay(0);
 	
 	if (!xState->display) {
@@ -82,11 +95,16 @@ bool InitX(XState* xState) {
 int main() {
 	printf("hello sailor!\n");
 	
-	XState* xState = new XState();
+	XState *xState = new XState();
 	if (!InitX(xState))
 		return 1;
 	
-	GameInput* gameInput = new GameInput();
+	GameInput *gameInput = Alloc(GameInput);
+	
+	GameInit(gameInput);
+	
+	gameInput->keyMap[KeyPause] = GetKeyCode(xState, '\t');
+	gameInput->keyMap[KeyUp] = GetKeyCode(xState, 'W');
 	
 	while (IsRunning) {
 		for (u32 i = 0; i < ArrayCount(gameInput->key); i++)
@@ -105,6 +123,7 @@ int main() {
 			ClearInput();
 		}*/
 		
+		GameUpdate(gameInput);
 		
 	}
 	

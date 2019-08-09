@@ -24,7 +24,7 @@ struct GameInput
 	i16 wheelDelta;
 	
 	u8 keyMap[KEY_TYPE_COUNT];
-	InputKey key[512];
+	InputKey key[256];
 };
 
 inline bool KeyWasDown(GameInput *gameInput, KeyType keyCode)
