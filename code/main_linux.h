@@ -6,6 +6,8 @@ struct XState {
 	Window window;
 	
 	Atom atomDeleteWindow;
+	
+	GLXContext glContext;
 };
 
 inline u8 GetKeyCode(XState *xState, u64 keySymbol) {

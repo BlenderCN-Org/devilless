@@ -2,9 +2,12 @@
 #include "common.h"
 #include "game_math.h"
 #include "main.h"
-
 #include <stdio.h>
 #include "main.cpp"
+
+#include <GL/gl.h>
+#include <GL/glx.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "main_linux.h"
@@ -64,22 +67,38 @@ bool InitX(XState *xState) {
 	xState->rootWindow = DefaultRootWindow(xState->display);
 	xState->defaultScreen = DefaultScreen(xState->display);
 	
-	XVisualInfo visualInfo = {};
-	if (!XMatchVisualInfo(xState->display, xState->defaultScreen, 24, TrueColor, &visualInfo)) {
+	GLint glxAttribs[] = {
+		GLX_RGBA,
+		GLX_DOUBLEBUFFER,
+		GLX_DEPTH_SIZE,     24,
+		GLX_STENCIL_SIZE,   8,
+		GLX_RED_SIZE,       8,
+		GLX_GREEN_SIZE,     8,
+		GLX_BLUE_SIZE,      8,
+		GLX_SAMPLE_BUFFERS, 0,
+		GLX_SAMPLES,        0,
+		None
+	};
+	XVisualInfo* visualInfo = glXChooseVisual(xState->display, xState->defaultScreen, glxAttribs);
+	
+	if (!visualInfo) {
 		printf("Error: X11 couldn't match requested visual info.\n");
 		return 0;
 	}
-	
+		
 	XSetWindowAttributes windowAttributes = {};
-	windowAttributes.colormap = XCreateColormap(xState->display, xState->rootWindow, visualInfo.visual, AllocNone);
+	windowAttributes.colormap = XCreateColormap(xState->display, xState->rootWindow, visualInfo->visual, AllocNone);
 	windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask;
 	
-	xState->window = XCreateWindow(xState->display, xState->rootWindow, 0, 0, 540, 480, 0, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
+	xState->window = XCreateWindow(xState->display, xState->rootWindow, 0, 0, 540, 480, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
 	
 	if (!xState->window) {
 		printf("Error: failed to create window.\n");
 		return 0;
 	}
+	
+	xState->glContext = glXCreateContext(xState->display, visualInfo, NULL, GL_TRUE);
+	glXMakeCurrent(xState->display, xState->window, xState->glContext);
 	
 	XStoreName(xState->display, xState->window, "Devilless");
 	XMapWindow(xState->display, xState->window);
@@ -125,8 +144,24 @@ int main() {
 		
 		GameUpdate(gameInput);
 		
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.4f, 0.1f, 0.13f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, 540, 480);
+		
+		glBegin(GL_TRIANGLES);
+		glColor3f(  1.0f,  0.0f, 0.0f);
+		glVertex3f( 0.0f, -1.0f, 0.0f);
+		glColor3f(  0.0f,  1.0f, 0.0f);
+		glVertex3f(-1.0f,  1.0f, 0.0f);
+		glColor3f(  0.0f,  0.0f, 1.0f);
+		glVertex3f( 1.0f,  1.0f, 0.0f);
+		glEnd();
+		
+		glXSwapBuffers(xState->display, xState->window);
 	}
 	
+	glXDestroyContext(xState->display, xState->glContext);
 	XDestroyWindow(xState->display, xState->window);
 	
 	return 0;
