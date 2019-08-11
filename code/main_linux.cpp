@@ -8,7 +8,12 @@
 #include "main.h"
 #include "renderer.h"
 
+XState *xState;
 bool IsRunning = 1;
+
+u8 GetKeyCode(u64 keySymbol) {
+	return XKeysymToKeycode(xState->display, keySymbol);
+}
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
 	if (inputKey->isDown != isDown) {
@@ -110,7 +115,7 @@ bool InitX() {
 int main() {
 	printf("hello sailor!\n");
 	
-	xState = new XState();
+	xState = Alloc(XState);
 	if (!InitX())
 		return 1;
 	
@@ -120,15 +125,6 @@ int main() {
 	GameInput *gameInput = Alloc(GameInput);
 	
 	GameInit(gameState, gameInput);
-	InitShader();
-	InitMesh();
-	
-	gameInput->keyMap[KeyUp] = GetKeyCode(xState, 'W');
-	gameInput->keyMap[KeyDown] = GetKeyCode(xState, 'S');
-	gameInput->keyMap[KeyLeft] = GetKeyCode(xState, 'A');
-	gameInput->keyMap[KeyRight] = GetKeyCode(xState, 'D');
-	gameInput->keyMap[KeyRun] = GetKeyCode(xState, XK_Shift_L);
-	gameInput->keyMap[KeyPause] = GetKeyCode(xState, 'E');
 	
 	timeval timeVal;
 	gettimeofday(&timeVal, 0);

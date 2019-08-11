@@ -3,6 +3,10 @@
 #include "renderer_opengl.h"
 #include "main_linux.h"
 
+glXSwapIntervalEXT_ *glXSwapIntervalEXT;
+glXSwapIntervalMESA_ *glXSwapIntervalMESA;
+glXSwapIntervalSGI_ *glXSwapIntervalSGI;
+
 void InitGlExtensions() {
 	glXSwapIntervalEXT = (glXSwapIntervalEXT_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalEXT");
 	glXSwapIntervalMESA = (glXSwapIntervalMESA_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalMESA");

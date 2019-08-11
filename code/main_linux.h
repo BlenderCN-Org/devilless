@@ -13,8 +13,4 @@ struct XState {
 	GLXContext glContext;
 };
 
-static XState *xState;
-
-inline u8 GetKeyCode(XState *xState, u64 keySymbol) {
-	return XKeysymToKeycode(xState->display, keySymbol);
-}
+extern XState *xState;

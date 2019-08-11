@@ -88,3 +88,4 @@ inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 
 void GameInit(GameState *gameState, GameInput *gameInput);
 void GameUpdate(GameState *gameState, GameInput *gameInput);
+u8 GetKeyCode(u64 keySymbol);

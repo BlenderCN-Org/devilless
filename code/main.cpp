@@ -25,12 +25,15 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 }
 
 void GameInit(GameState *gameState, GameInput *gameInput) {
-	/*gameInput->map[KeyUp] = XKeysymToKeycode(display, XK_Up);
-	gameInput->map[KeyDown] = XKeysymToKeycode(display, XK_Down);
-	gameInput->map[KeyLeft] = XKeysymToKeycode(display, XK_Right);
-	gameInput->map[KeyJump] = XKeysymToKeycode(display, XK_Space);
-	gameInput->map[KeyPause] = XKeysymToKeycode(display, XK_Escape);*/
-	//gameInput->keyMap[KeyPause] = GetScanCode('A');
+	gameInput->keyMap[KeyUp] = GetKeyCode('W');
+	gameInput->keyMap[KeyDown] = GetKeyCode('S');
+	gameInput->keyMap[KeyLeft] = GetKeyCode('A');
+	gameInput->keyMap[KeyRight] = GetKeyCode('D');
+	gameInput->keyMap[KeyRun] = GetKeyCode('C');
+	gameInput->keyMap[KeyPause] = GetKeyCode('E');
+	
+	InitShader();
+	InitMesh();
 }
 
 void GameUpdate(GameState *gameState, GameInput *gameInput) {

@@ -4,6 +4,31 @@
 #include "stdio.h"
 #include "main.h"
 
+glGenBuffers_ *glGenBuffers;
+glBindBuffer_ *glBindBuffer;
+glBufferData_ *glBufferData;
+
+glVertexAttribPointer_ *glVertexAttribPointer;
+glEnableVertexAttribArray_ *glEnableVertexAttribArray;
+glGetUniformLocation_ *glGetUniformLocation;
+glGetAttribLocation_ *glGetAttribLocation;
+
+glUniformMatrix4fv_ *glUniformMatrix4fv;
+
+glCreateProgram_ *glCreateProgram;
+glCreateShader_ *glCreateShader;
+glLinkProgram_ *glLinkProgram;
+glAttachShader_ *glAttachShader;
+glShaderSource_ *glShaderSource;
+glCompileShader_ *glCompileShader;
+glDeleteShader_ *glDeleteShader;
+glUseProgram_ *glUseProgram;
+
+glGetShaderiv_ *glGetShaderiv;
+glGetShaderInfoLog_ *glGetShaderInfoLog;
+glGetProgramiv_ *glGetProgramiv;
+glGetProgramInfoLog_ *glGetProgramInfoLog;
+
 static GLuint vertex_vbo;
 static GLuint index_vbo;
 static GLuint debugShader;
