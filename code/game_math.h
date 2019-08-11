@@ -40,47 +40,6 @@
 
 #define Sign(x) ((x) >= 0 ? 1 : -1)
 
-union v2 {
-	struct {
-		f32 x, y;
-	};
-	f32 e[2];
-};
-
-union v2i {
-	struct {
-		i32 x, y;
-	};
-	i32 e[2];
-};
-
-union v3 {
-	struct { f32 x, y, z; };
-	struct { f32 r, g, b; };
-	f32 e[3];
-};
-
-union v4 {
-	struct { f32 x, y, z, w; };
-	struct { f32 r, g, b, a; };
-	f32 e[4];
-};
-
-struct m2
-{
-	f32 e[2][2];
-};
-
-struct m3
-{
-	f32 e[3][3];
-};
-
-struct m4
-{
-	f32 e[4][4];
-};
-
 struct aabb {
 	v3 min;
 	v3 max;
@@ -109,7 +68,7 @@ inline f32 Sqrt(f32 value) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(value))
 inline f32 RSqrt(f32 value) { return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(value))); }
 
 static const __m128 SIGNMASK = _mm_castsi128_ps(_mm_cvtsi32_si128(0x80000000));
-f32 Abs(f32 value) {
+inline f32 Abs(f32 value) {
     return _mm_cvtss_f32(_mm_andnot_ps(SIGNMASK, _mm_set_ss(value)));
 }
 

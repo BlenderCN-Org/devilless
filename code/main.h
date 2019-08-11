@@ -1,4 +1,7 @@
 
+#include "common.h"
+#include "game_math.h"
+
 struct Vertex {
 	v3 position;
 	v3 normal;
@@ -30,7 +33,8 @@ enum KeyType
 	KeyDown,
 	KeyRight,
 	KeyLeft,
-	KeyJump,
+	KeyRun,
+	KeyJum,
 	KeyPause,
 	
 	KEY_TYPE_COUNT,
@@ -46,7 +50,7 @@ struct GameInput
 	InputKey key[256];
 };
 
-inline bool KeyWasDown(GameInput *gameInput, KeyType keyCode)
+inline bool KeyWasDown(KeyType keyCode, GameInput *gameInput)
 {
 	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
 	if (inputKey.isDown)
@@ -58,7 +62,7 @@ inline bool KeyWasDown(GameInput *gameInput, KeyType keyCode)
 	return 0;
 }
 
-inline bool KeyWasPressed(GameInput *gameInput, KeyType keyCode)
+inline bool KeyWasPressed(KeyType keyCode, GameInput *gameInput)
 {
 	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
 	if (inputKey.isDown && inputKey.count >= 1)
@@ -70,7 +74,7 @@ inline bool KeyWasPressed(GameInput *gameInput, KeyType keyCode)
 	return 0;
 }
 
-inline bool KeyWasReleased(GameInput *gameInput, KeyType keyCode)
+inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 {
 	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
 	if (!inputKey.isDown && inputKey.count >= 1)
@@ -81,3 +85,6 @@ inline bool KeyWasReleased(GameInput *gameInput, KeyType keyCode)
 	
 	return 0;
 }
+
+void GameInit(GameState *gameState, GameInput *gameInput);
+void GameUpdate(GameState *gameState, GameInput *gameInput);

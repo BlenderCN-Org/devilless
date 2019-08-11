@@ -1,4 +1,9 @@
 
+#include "renderer_opengl.h"
+#include <GL/gl.h>
+#include "stdio.h"
+#include "main.h"
+
 static GLuint vertex_vbo;
 static GLuint index_vbo;
 static GLuint debugShader;

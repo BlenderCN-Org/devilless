@@ -1,22 +1,12 @@
 
-#include "common.h"
-#include "game_math.h"
-#include "main.h"
-#include <stdio.h>
-#include "renderer.h"
-#include "main.cpp"
-
-#include <GL/gl.h>
-#include <GL/glx.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <sys/time.h>
+#include <stdio.h>
+
 #include "main_linux.h"
-
-static XState *xState;
-
-#include "renderer_opengl_x11.cpp"
-#include "renderer_opengl.cpp"
+#include "main.h"
+#include "renderer.h"
 
 bool IsRunning = 1;
 
@@ -124,7 +114,7 @@ int main() {
 	if (!InitX())
 		return 1;
 	
-	InitOpenGL();
+	RendererInit();
 	
 	GameState *gameState = Alloc(GameState);
 	GameInput *gameInput = Alloc(GameInput);
@@ -133,11 +123,16 @@ int main() {
 	InitShader();
 	InitMesh();
 	
-	gameInput->keyMap[KeyPause] = GetKeyCode(xState, 'E');
 	gameInput->keyMap[KeyUp] = GetKeyCode(xState, 'W');
 	gameInput->keyMap[KeyDown] = GetKeyCode(xState, 'S');
 	gameInput->keyMap[KeyLeft] = GetKeyCode(xState, 'A');
 	gameInput->keyMap[KeyRight] = GetKeyCode(xState, 'D');
+	gameInput->keyMap[KeyRun] = GetKeyCode(xState, XK_Shift_L);
+	gameInput->keyMap[KeyPause] = GetKeyCode(xState, 'E');
+	
+	timeval timeVal;
+	gettimeofday(&timeVal, 0);
+	u64 frameStartCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
 	
 	while (IsRunning) {
 		for (u32 i = 0; i < ArrayCount(gameInput->key); i++)
@@ -164,6 +159,15 @@ int main() {
 		GameUpdate(gameState, gameInput);
 		
 		glXSwapBuffers(xState->display, xState->window);
+		
+		gettimeofday(&timeVal, 0);
+		const u64 frameFinishCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
+		
+		u64 counterElapsed = frameFinishCounter - frameStartCounter;
+		gameState->deltaTime = Min(0.05f, (f32)counterElapsed / 1000000);
+		printf("%f\n", gameState->deltaTime);
+		
+		frameStartCounter = frameFinishCounter;
 	}
 	
 	glXDestroyContext(xState->display, xState->glContext);

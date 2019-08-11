@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -23,3 +25,44 @@ typedef size_t uSize;
 #define Alloc(type) (type *)calloc(1, sizeof(type))
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 #define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}
+
+union v2 {
+	struct {
+		f32 x, y;
+	};
+	f32 e[2];
+};
+
+union v2i {
+	struct {
+		i32 x, y;
+	};
+	i32 e[2];
+};
+
+union v3 {
+	struct { f32 x, y, z; };
+	struct { f32 r, g, b; };
+	f32 e[3];
+};
+
+union v4 {
+	struct { f32 x, y, z, w; };
+	struct { f32 r, g, b, a; };
+	f32 e[4];
+};
+
+struct m2
+{
+	f32 e[2][2];
+};
+
+struct m3
+{
+	f32 e[3][3];
+};
+
+struct m4
+{
+	f32 e[4][4];
+};
