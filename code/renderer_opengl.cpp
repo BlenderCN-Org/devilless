@@ -2,6 +2,8 @@
 static GLuint vertex_vbo;
 static GLuint index_vbo;
 static GLuint debugShader;
+static GLuint uniformModelView;
+static GLuint uniformViewProjection;
 static GLuint attribVertexPosition;
 static GLuint attribVertexColor;
 
@@ -74,6 +76,8 @@ static GLuint CreateOpenGLShader(char *headerCode, char *vertexCode, char *fragm
     glDeleteShader(vertexShaderID);
     glDeleteShader(fragmentShaderID);
 	
+	uniformModelView = glGetUniformLocation(programID, "modelView");
+	uniformViewProjection = glGetUniformLocation(programID, "viewProjection");
 	attribVertexPosition = glGetAttribLocation(programID, "vertexPosition");
 	attribVertexColor = glGetAttribLocation(programID, "vertexColor");
     
@@ -86,6 +90,9 @@ void InitShader() {
 	)AZBD";
     
     char *vertexCode = (char *)R"AZBD(
+	uniform mat4 modelView;
+	uniform mat4 viewProjection;
+	
     attribute vec3 vertexPosition;
 	attribute vec3 vertexColor;
  
@@ -93,7 +100,7 @@ void InitShader() {
     
     void main() {
 		fragmentColor = vertexColor;
-		gl_Position = vec4(vertexPosition, 1.0);
+		gl_Position = vec4(vertexPosition, 1.0) * modelView * viewProjection;
     }
     
     )AZBD";
@@ -110,14 +117,10 @@ void InitShader() {
 }
 
 void InitMesh() {
-	/*Vertex vertices[3] = {
-		0.0f, -1.0f, 0.0f,	0.0f, 0.0f, 1.0f,	0,
-		-1.0f, 1.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0,
-		1.0f, 1.0f, 0.0f,	 1.0f, 0.0f, 0.0f,	0,
-	};*/
-	v3 vertices[6] = {
-		0.0f, -1.0f, 0.0f,	-1.0f, 1.0f, 0.0f,	1.0f, 1.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, 1.0f,
+	Vertex vertices[3] = {
+		0.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f,	0,
+		-1.0f, 1.0f, -1.0f,	0.0f, 1.0f, 0.0f,	0,
+		1.0f, 1.0f, -1.0f,	 1.0f, 0.0f, 0.0f,	0,
 	};
 	
 	u32 indices[3] = {
@@ -128,14 +131,17 @@ void InitMesh() {
     glGenBuffers(1, &index_vbo);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(v3) * ArrayCount(vertices), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * ArrayCount(vertices), vertices, GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u32) * ArrayCount(indices), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u32) * ArrayCount(indices), indices, GL_STATIC_DRAW);
 }
 
-void RenderMesh() {
+void RenderMesh(m4 modelView, m4 viewProjection) {
 	glUseProgram(debugShader);
+	
+	glUniformMatrix4fv(uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
+	glUniformMatrix4fv(uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_vbo);
@@ -143,8 +149,8 @@ void RenderMesh() {
 	glEnableVertexAttribArray(attribVertexPosition);
 	glEnableVertexAttribArray(attribVertexColor);
 	
-	glVertexAttribPointer(attribVertexPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(attribVertexColor, 3, GL_FLOAT, GL_FALSE, 0, (void *)(sizeof(v3) * 3));
+	glVertexAttribPointer(attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
 	i32 indexCount = 3;
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

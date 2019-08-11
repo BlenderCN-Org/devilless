@@ -5,6 +5,19 @@ struct Vertex {
 	u32 matID;
 };
 
+struct Player {
+	v3 position;
+	v3 velocity;
+	f32 yaw;
+	f32 pitch;
+};
+
+struct GameState {
+	f32 deltaTime;
+	
+	Player player;
+};
+
 struct InputKey
 {
     bool isDown;

@@ -17,8 +17,13 @@ typedef void glVertexAttribPointer_(GLuint index, GLint size, GLenum type, GLboo
 static glVertexAttribPointer_ *glVertexAttribPointer;
 typedef void glEnableVertexAttribArray_(GLuint index);
 static glEnableVertexAttribArray_ *glEnableVertexAttribArray;
+typedef GLint glGetUniformLocation_(GLuint program,const GLchar *name);
+static glGetUniformLocation_ *glGetUniformLocation;
 typedef GLint glGetAttribLocation_(GLuint program, const GLchar *name);
 static glGetAttribLocation_ *glGetAttribLocation;
+
+typedef void glUniformMatrix4fv_(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+static glUniformMatrix4fv_ *glUniformMatrix4fv;
 
 typedef GLuint glCreateProgram_(void);
 static glCreateProgram_ *glCreateProgram;
@@ -57,7 +62,10 @@ void InitGlExtensions() {
 	
 	glVertexAttribPointer = (glVertexAttribPointer_ *)glXGetProcAddress((const GLubyte *)"glVertexAttribPointer");
 	glEnableVertexAttribArray = (glEnableVertexAttribArray_ *)glXGetProcAddress((const GLubyte *)"glEnableVertexAttribArray");
+	glGetUniformLocation = (glGetUniformLocation_ *)glXGetProcAddress((const GLubyte *)"glGetUniformLocation");
 	glGetAttribLocation = (glGetAttribLocation_ *)glXGetProcAddress((const GLubyte *)"glGetAttribLocation");
+	
+	glUniformMatrix4fv = (glUniformMatrix4fv_ *)glXGetProcAddress((const GLubyte *)"glUniformMatrix4fv");
 	
 	glCreateProgram = (glCreateProgram_ *)glXGetProcAddress((const GLubyte *)"glCreateProgram");
 	glCreateShader = (glCreateShader_ *)glXGetProcAddress((const GLubyte *)"glCreateShader");

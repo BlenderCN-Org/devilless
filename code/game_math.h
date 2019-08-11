@@ -76,6 +76,11 @@ struct m3
 	f32 e[3][3];
 };
 
+struct m4
+{
+	f32 e[4][4];
+};
+
 struct aabb {
 	v3 min;
 	v3 max;
@@ -892,7 +897,7 @@ inline quat ExtractRotation(m3 m, quat q)
 
 // Matrix4 math
 
-/*inline m4 M4Identity() {
+inline m4 M4Identity() {
 	m4 result = {
 		{
 			{1, 0, 0, 0},
@@ -924,7 +929,7 @@ inline m4 M4(v3 v) {
 	return result;
 }
 
-inline m4 M4(Quat q) {
+/*inline m4 M4(Quat q) {
 	f32 xx = q.x * q.x;
 	f32 yy = q.y * q.y;
 	f32 zz = q.z * q.z;
@@ -952,7 +957,7 @@ inline m4 M4(Quat q) {
 	result.e[2][2] = 1.0f - 2.0f * (xx + yy);
 	
 	return result;
-}
+}*/
 
 inline m4 operator+(m4 a, m4 b) {
 	m4 result = {};
@@ -1191,7 +1196,7 @@ inline m4 ProjectionMatrix(f32 aspectRatio)
 {
 	f32 fov = 94.0f;
 	f32 nearPlane = 0.01f;
-	f32 farPlane = 200.0f;
+	//f32 farPlane = 200.0f;
 	
 	f32 range = Tan(0.5f * fov * (PI / 180.0f)) * nearPlane;
 	f32 left = -range * aspectRatio;
@@ -1207,7 +1212,7 @@ inline m4 ProjectionMatrix(f32 aspectRatio)
 	result.e[2][3] = -2.0f * nearPlane;
 	
 	return result;
-}*/
+}
 
 // random
 

@@ -3,6 +3,7 @@
 #include "game_math.h"
 #include "main.h"
 #include <stdio.h>
+#include "renderer.h"
 #include "main.cpp"
 
 #include <GL/gl.h>
@@ -125,14 +126,18 @@ int main() {
 	
 	InitOpenGL();
 	
+	GameState *gameState = Alloc(GameState);
 	GameInput *gameInput = Alloc(GameInput);
 	
-	GameInit(gameInput);
+	GameInit(gameState, gameInput);
 	InitShader();
 	InitMesh();
 	
-	gameInput->keyMap[KeyPause] = GetKeyCode(xState, '\t');
+	gameInput->keyMap[KeyPause] = GetKeyCode(xState, 'E');
 	gameInput->keyMap[KeyUp] = GetKeyCode(xState, 'W');
+	gameInput->keyMap[KeyDown] = GetKeyCode(xState, 'S');
+	gameInput->keyMap[KeyLeft] = GetKeyCode(xState, 'A');
+	gameInput->keyMap[KeyRight] = GetKeyCode(xState, 'D');
 	
 	while (IsRunning) {
 		for (u32 i = 0; i < ArrayCount(gameInput->key); i++)
@@ -151,23 +156,12 @@ int main() {
 			ClearInput();
 		}*/
 		
-		GameUpdate(gameInput);
-		
 		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.4f, 0.1f, 0.13f, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 540, 480);
 		
-		/*glBegin(GL_TRIANGLES);
-		glColor3f(  1.0f,  0.0f, 0.0f);
-		glVertex3f( 0.0f, -1.0f, 0.0f);
-		glColor3f(  0.0f,  1.0f, 0.0f);
-		glVertex3f(-1.0f,  1.0f, 0.0f);
-		glColor3f(  0.0f,  0.0f, 1.0f);
-		glVertex3f( 1.0f,  1.0f, 0.0f);
-		glEnd();*/
-		
-		RenderMesh();
+		GameUpdate(gameState, gameInput);
 		
 		glXSwapBuffers(xState->display, xState->window);
 	}
