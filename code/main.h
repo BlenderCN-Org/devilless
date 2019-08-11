@@ -1,4 +1,10 @@
 
+struct Vertex {
+	v3 position;
+	v3 normal;
+	u32 matID;
+};
+
 struct InputKey
 {
     bool isDown;

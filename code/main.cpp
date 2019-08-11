@@ -6,7 +6,6 @@ void GameInit(GameInput *gameInput) {
 	gameInput->map[KeyJump] = XKeysymToKeycode(display, XK_Space);
 	gameInput->map[KeyPause] = XKeysymToKeycode(display, XK_Escape);*/
 	//gameInput->keyMap[KeyPause] = GetScanCode('A');
-	
 }
 
 void GameUpdate(GameInput *gameInput) {

@@ -12,6 +12,11 @@
 #include <X11/Xutil.h>
 #include "main_linux.h"
 
+static XState *xState;
+
+#include "renderer_opengl_x11.cpp"
+#include "renderer_opengl.cpp"
+
 bool IsRunning = 1;
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
@@ -21,7 +26,7 @@ void ProcessInput(InputKey *inputKey, bool isDown) {
 	}
 }
 
-void ProcessMessages(XState *xState, GameInput *gameInput) {
+void ProcessMessages(GameInput *gameInput) {
 	XEvent event = {};
 	while (XPending(xState->display) > 0) {
 		XNextEvent(xState->display, &event);
@@ -56,7 +61,7 @@ void ProcessMessages(XState *xState, GameInput *gameInput) {
 	}
 }
 
-bool InitX(XState *xState) {
+bool InitX() {
 	xState->display = XOpenDisplay(0);
 	
 	if (!xState->display) {
@@ -114,13 +119,17 @@ bool InitX(XState *xState) {
 int main() {
 	printf("hello sailor!\n");
 	
-	XState *xState = new XState();
-	if (!InitX(xState))
+	xState = new XState();
+	if (!InitX())
 		return 1;
+	
+	InitOpenGL();
 	
 	GameInput *gameInput = Alloc(GameInput);
 	
 	GameInit(gameInput);
+	InitShader();
+	InitMesh();
 	
 	gameInput->keyMap[KeyPause] = GetKeyCode(xState, '\t');
 	gameInput->keyMap[KeyUp] = GetKeyCode(xState, 'W');
@@ -131,7 +140,7 @@ int main() {
 			gameInput->key[i].count = 0;
 		}
 		
-		ProcessMessages(xState, gameInput);
+		ProcessMessages(gameInput);
 		
 		/*if (activeWindow)
 		{
@@ -149,14 +158,16 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 540, 480);
 		
-		glBegin(GL_TRIANGLES);
+		/*glBegin(GL_TRIANGLES);
 		glColor3f(  1.0f,  0.0f, 0.0f);
 		glVertex3f( 0.0f, -1.0f, 0.0f);
 		glColor3f(  0.0f,  1.0f, 0.0f);
 		glVertex3f(-1.0f,  1.0f, 0.0f);
 		glColor3f(  0.0f,  0.0f, 1.0f);
 		glVertex3f( 1.0f,  1.0f, 0.0f);
-		glEnd();
+		glEnd();*/
+		
+		RenderMesh();
 		
 		glXSwapBuffers(xState->display, xState->window);
 	}
