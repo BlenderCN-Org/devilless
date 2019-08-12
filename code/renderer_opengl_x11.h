@@ -1,5 +1,4 @@
 
-#include <GL/gl.h>
 #include <GL/glx.h>
 
 typedef void glXSwapIntervalEXT_(Display *dpy, GLXDrawable drawable, int interval);
@@ -10,4 +9,3 @@ typedef int glXSwapIntervalSGI_(int interval);
 extern glXSwapIntervalSGI_ *glXSwapIntervalSGI;
 
 void SetVSync(bool on);
-void InitOpenGL();

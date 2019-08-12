@@ -1,6 +1,7 @@
 
 #include "renderer.h"
 #include "main.h"
+#include "game_math.h"
 
 void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 	v2 input = {};
@@ -32,13 +33,13 @@ void GameInit(GameState *gameState, GameInput *gameInput) {
 	gameInput->keyMap[KeyRun] = GetKeyCode('C');
 	gameInput->keyMap[KeyPause] = GetKeyCode('E');
 	
-	InitShader();
-	InitMesh();
+	InitShader(ShaderDebug);
+	InitMesh(MeshTriangle);
 }
 
 void GameUpdate(GameState *gameState, GameInput *gameInput) {
 	UpdatePlayer(&gameState->player, gameState->deltaTime, gameInput);
 	
 	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix(540.0f / 480.0f);
-	RenderMesh(M4Identity(), vp);
+	RenderMesh(MeshTriangle, M4Identity(), vp);
 }

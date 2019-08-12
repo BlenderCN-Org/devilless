@@ -7,6 +7,7 @@
 #include "main_linux.h"
 #include "main.h"
 #include "renderer.h"
+#include "game_math.h"
 
 XState *xState;
 bool IsRunning = 1;
@@ -119,7 +120,7 @@ int main() {
 	if (!InitX())
 		return 1;
 	
-	RendererInit();
+	InitRenderer();
 	
 	GameState *gameState = Alloc(GameState);
 	GameInput *gameInput = Alloc(GameInput);

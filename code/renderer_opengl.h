@@ -2,6 +2,8 @@
 #pragma once
 
 #include <GL/gl.h>
+#include "common.h"
+#include "asset_manager.h"
 
 typedef void glGenBuffers_(GLsizei n, GLuint * buffers);
 extern glGenBuffers_ *glGenBuffers;
@@ -47,3 +49,26 @@ typedef void glGetProgramiv_(GLuint program, GLenum pname, GLint *params);
 extern glGetProgramiv_ *glGetProgramiv;
 typedef void glGetProgramInfoLog_(GLuint program, GLsizei maxLength, GLsizei *length, GLchar *infoLog);
 extern glGetProgramInfoLog_ *glGetProgramInfoLog;
+
+struct MeshInfo {
+	GLuint vertexVBO;
+	u32 verticesSize;
+	
+	GLuint indexVBO;
+	u32 indicesSize;
+};
+
+struct ShaderInfo {
+	GLuint programID;
+	GLuint uniformModelView;
+	GLuint uniformViewProjection;
+	GLuint attribVertexPosition;
+	GLuint attribVertexColor;
+};
+
+struct RenderState {
+	MeshInfo meshInfos[MESH_ID_COUNT];
+	ShaderInfo shaderInfos[SHADER_ID_COUNT];
+};
+
+extern RenderState *renderState;

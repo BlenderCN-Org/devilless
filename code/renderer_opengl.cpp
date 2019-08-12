@@ -29,15 +29,10 @@ glGetShaderInfoLog_ *glGetShaderInfoLog;
 glGetProgramiv_ *glGetProgramiv;
 glGetProgramInfoLog_ *glGetProgramInfoLog;
 
-static GLuint vertex_vbo;
-static GLuint index_vbo;
-static GLuint debugShader;
-static GLuint uniformModelView;
-static GLuint uniformViewProjection;
-static GLuint attribVertexPosition;
-static GLuint attribVertexColor;
+RenderState *renderState;
 
-static GLuint CreateOpenGLShader(char *headerCode, char *vertexCode, char *fragmentCode)
+
+void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCode, char *fragmentCode)
 {
     GLint result = GL_FALSE;
     i32 infoLogLength = 0;
@@ -106,15 +101,14 @@ static GLuint CreateOpenGLShader(char *headerCode, char *vertexCode, char *fragm
     glDeleteShader(vertexShaderID);
     glDeleteShader(fragmentShaderID);
 	
-	uniformModelView = glGetUniformLocation(programID, "modelView");
-	uniformViewProjection = glGetUniformLocation(programID, "viewProjection");
-	attribVertexPosition = glGetAttribLocation(programID, "vertexPosition");
-	attribVertexColor = glGetAttribLocation(programID, "vertexColor");
-    
-    return programID;
+	shaderInfo->programID = programID;
+	shaderInfo->uniformModelView = glGetUniformLocation(programID, "modelView");
+	shaderInfo->uniformViewProjection = glGetUniformLocation(programID, "viewProjection");
+	shaderInfo->attribVertexPosition = glGetAttribLocation(programID, "vertexPosition");
+	shaderInfo->attribVertexColor = glGetAttribLocation(programID, "vertexColor");
 }
 
-void InitShader() {
+void InitShader(ShaderID shaderID) {
 	char *headerCode = (char *)R"AZBD(
 	#version 110
 	)AZBD";
@@ -143,44 +137,38 @@ void InitShader() {
     }
     
     )AZBD";
-    debugShader = CreateOpenGLShader(headerCode, vertexCode, fragmentCode);
+    CreateOpenGLShader(&renderState->shaderInfos[shaderID], headerCode, vertexCode, fragmentCode);
 }
 
-void InitMesh() {
-	Vertex vertices[3] = {
-		0.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f,	0,
-		-1.0f, 1.0f, -1.0f,	0.0f, 1.0f, 0.0f,	0,
-		1.0f, 1.0f, -1.0f,	 1.0f, 0.0f, 0.0f,	0,
-	};
+void InitMeshBuffers(MeshID meshID, void *vertices, u32 verticesSize, void *indices, u32 indicesSize) {
+	MeshInfo *meshInfo = &renderState->meshInfos[meshID];
+	glGenBuffers(1, &meshInfo->vertexVBO);
+    glGenBuffers(1, &meshInfo->indexVBO);
 	
-	u32 indices[3] = {
-		0, 1, 2,
-	};
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
+    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
 	
-	glGenBuffers(1, &vertex_vbo);
-    glGenBuffers(1, &index_vbo);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * ArrayCount(vertices), vertices, GL_STATIC_DRAW);
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u32) * ArrayCount(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
 }
 
-void RenderMesh(m4 modelView, m4 viewProjection) {
-	glUseProgram(debugShader);
+void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
+	const MeshInfo &meshInfo = renderState->meshInfos[meshID];
+	const ShaderInfo &shaderInfo = renderState->shaderInfos[ShaderDebug];
 	
-	glUniformMatrix4fv(uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
-	glUniformMatrix4fv(uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	glUseProgram(shaderInfo.programID);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_vbo);
+	glUniformMatrix4fv(shaderInfo.uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
+	glUniformMatrix4fv(shaderInfo.uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo.vertexVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo.indexVBO);
 
-	glEnableVertexAttribArray(attribVertexPosition);
-	glEnableVertexAttribArray(attribVertexColor);
+	glEnableVertexAttribArray(shaderInfo.attribVertexPosition);
+	glEnableVertexAttribArray(shaderInfo.attribVertexColor);
 	
-	glVertexAttribPointer(attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
+	glVertexAttribPointer(shaderInfo.attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(shaderInfo.attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
 	i32 indexCount = 3;
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

@@ -50,7 +50,8 @@ void SetVSync(bool on) {
 	}
 }
 
-void RendererInit() {
+void InitRenderer() {
+	renderState = Alloc(RenderState);
 	InitGlExtensions();
 	SetVSync(1);
 }
