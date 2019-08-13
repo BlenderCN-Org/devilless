@@ -13,4 +13,4 @@ struct XState {
 	GLXContext glContext;
 };
 
-extern XState *xState;
+extern XState xState;

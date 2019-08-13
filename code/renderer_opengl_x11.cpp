@@ -2,6 +2,7 @@
 #include "renderer_opengl_x11.h"
 #include "renderer_opengl.h"
 #include "main_linux.h"
+#include <stdio.h>
 
 glXSwapIntervalEXT_ *glXSwapIntervalEXT;
 glXSwapIntervalMESA_ *glXSwapIntervalMESA;
@@ -40,7 +41,7 @@ void InitGlExtensions() {
 
 void SetVSync(bool on) {
 	if (glXSwapIntervalEXT) {
-		glXSwapIntervalEXT(xState->display, xState->window, on);
+		glXSwapIntervalEXT(xState.display, xState.window, on);
 	}
 	else if (glXSwapIntervalMESA) {
 		glXSwapIntervalMESA(on);
@@ -51,7 +52,12 @@ void SetVSync(bool on) {
 }
 
 void InitRenderer() {
-	renderState = Alloc(RenderState);
+	char *GL_version=(char *)glGetString(GL_VERSION);
+    char *GL_vendor=(char *)glGetString(GL_VENDOR);
+    char *GL_renderer=(char *)glGetString(GL_RENDERER);
+	
+	printf("ver: %s, ven: %s, ren: %s\n", GL_version, GL_vendor, GL_renderer);
+	
 	InitGlExtensions();
 	SetVSync(1);
 }

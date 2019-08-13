@@ -1,7 +1,6 @@
 
 #include "renderer_opengl.h"
 #include <GL/gl.h>
-#include "stdio.h"
 #include "main.h"
 
 glGenBuffers_ *glGenBuffers;
@@ -29,7 +28,7 @@ glGetShaderInfoLog_ *glGetShaderInfoLog;
 glGetProgramiv_ *glGetProgramiv;
 glGetProgramInfoLog_ *glGetProgramInfoLog;
 
-RenderState *renderState;
+RenderState renderState = {};
 
 
 void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCode, char *fragmentCode)
@@ -53,8 +52,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &buffer[0]);
-		printf("error in vertex shader code\n");
-		printf(buffer);
+		//printf("error in vertex shader code\n");
+		//printf(buffer);
         
         Assert(!"failed to compile vertex shader");
     }
@@ -74,8 +73,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &buffer[0]);
-		printf("error in fragment shader code\n");
-        printf(buffer);
+		//printf("error in fragment shader code\n");
+        //printf(buffer);
         
         Assert(!"failed to compile fragment shader");
     }
@@ -92,8 +91,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetProgramInfoLog(programID, infoLogLength, NULL, &buffer[0]);
-		printf("error in shader code\n");
-        printf(buffer);
+		//printf("error in shader code\n");
+        //printf(buffer);
         
         Assert(!"failed to compile fragment shader");
     }
@@ -137,11 +136,11 @@ void InitShader(ShaderID shaderID) {
     }
     
     )AZBD";
-    CreateOpenGLShader(&renderState->shaderInfos[shaderID], headerCode, vertexCode, fragmentCode);
+    CreateOpenGLShader(&renderState.shaderInfos[shaderID], headerCode, vertexCode, fragmentCode);
 }
 
 void InitMeshBuffers(MeshID meshID, void *vertices, u32 verticesSize, void *indices, u32 indicesSize) {
-	MeshInfo *meshInfo = &renderState->meshInfos[meshID];
+	MeshInfo *meshInfo = &renderState.meshInfos[meshID];
 	glGenBuffers(1, &meshInfo->vertexVBO);
     glGenBuffers(1, &meshInfo->indexVBO);
 	
@@ -153,22 +152,22 @@ void InitMeshBuffers(MeshID meshID, void *vertices, u32 verticesSize, void *indi
 }
 
 void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
-	const MeshInfo &meshInfo = renderState->meshInfos[meshID];
-	const ShaderInfo &shaderInfo = renderState->shaderInfos[ShaderDebug];
+	const MeshInfo *meshInfo = &renderState.meshInfos[meshID];
+	const ShaderInfo *shaderInfo = &renderState.shaderInfos[ShaderDebug];
 	
-	glUseProgram(shaderInfo.programID);
+	glUseProgram(shaderInfo->programID);
 	
-	glUniformMatrix4fv(shaderInfo.uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
-	glUniformMatrix4fv(shaderInfo.uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, meshInfo.vertexVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo.indexVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
 
-	glEnableVertexAttribArray(shaderInfo.attribVertexPosition);
-	glEnableVertexAttribArray(shaderInfo.attribVertexColor);
+	glEnableVertexAttribArray(shaderInfo->attribVertexPosition);
+	glEnableVertexAttribArray(shaderInfo->attribVertexColor);
 	
-	glVertexAttribPointer(shaderInfo.attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(shaderInfo.attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
+	glVertexAttribPointer(shaderInfo->attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(shaderInfo->attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
 	i32 indexCount = 3;
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

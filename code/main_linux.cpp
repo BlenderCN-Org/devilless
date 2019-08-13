@@ -1,19 +1,19 @@
 
+#include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/time.h>
-#include <stdio.h>
 
 #include "main_linux.h"
 #include "main.h"
 #include "renderer.h"
 #include "game_math.h"
 
-XState *xState;
+XState xState = {};
 bool IsRunning = 1;
 
 u8 GetKeyCode(u64 keySymbol) {
-	return XKeysymToKeycode(xState->display, keySymbol);
+	return XKeysymToKeycode(xState.display, keySymbol);
 }
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
@@ -25,20 +25,20 @@ void ProcessInput(InputKey *inputKey, bool isDown) {
 
 void ProcessMessages(GameInput *gameInput) {
 	XEvent event = {};
-	while (XPending(xState->display) > 0) {
-		XNextEvent(xState->display, &event);
+	while (XPending(xState.display) > 0) {
+		XNextEvent(xState.display, &event);
 		switch (event.type) {
 			case DestroyNotify:
 			{
 				XDestroyWindowEvent *e = (XDestroyWindowEvent *)&event;
-				if (e->window == xState->window)
+				if (e->window == xState.window)
 					IsRunning = 0;
 				break;
 			}
 			case ClientMessage:
 			{
 				XClientMessageEvent *e = (XClientMessageEvent *)&event;
-				if ((Atom)e->data.l[0] == xState->atomDeleteWindow)
+				if ((Atom)e->data.l[0] == xState.atomDeleteWindow)
 					IsRunning = 0;
 				break;
 			}
@@ -59,15 +59,16 @@ void ProcessMessages(GameInput *gameInput) {
 }
 
 bool InitX() {
-	xState->display = XOpenDisplay(0);
+	XInitThreads();
+	xState.display = XOpenDisplay(0);
 	
-	if (!xState->display) {
+	if (!xState.display) {
 		printf("Error: failed to open X11 display.\n");
 		return 0;
 	}
 	
-	xState->rootWindow = DefaultRootWindow(xState->display);
-	xState->defaultScreen = DefaultScreen(xState->display);
+	xState.rootWindow = DefaultRootWindow(xState.display);
+	xState.defaultScreen = DefaultScreen(xState.display);
 	
 	GLint glxAttribs[] = {
 		GLX_RGBA,
@@ -81,7 +82,7 @@ bool InitX() {
 		GLX_SAMPLES,        0,
 		None
 	};
-	XVisualInfo* visualInfo = glXChooseVisual(xState->display, xState->defaultScreen, glxAttribs);
+	XVisualInfo* visualInfo = glXChooseVisual(xState.display, xState.defaultScreen, glxAttribs);
 	
 	if (!visualInfo) {
 		printf("Error: X11 couldn't match requested visual info.\n");
@@ -89,26 +90,27 @@ bool InitX() {
 	}
 		
 	XSetWindowAttributes windowAttributes = {};
-	windowAttributes.colormap = XCreateColormap(xState->display, xState->rootWindow, visualInfo->visual, AllocNone);
+	windowAttributes.colormap = XCreateColormap(xState.display, xState.rootWindow, visualInfo->visual, AllocNone);
 	windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask;
 	
-	xState->window = XCreateWindow(xState->display, xState->rootWindow, 0, 0, 540, 480, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
+	xState.window = XCreateWindow(xState.display, xState.rootWindow, 0, 0, 540, 480, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
 	
-	if (!xState->window) {
+	if (!xState.window) {
 		printf("Error: failed to create window.\n");
 		return 0;
 	}
 	
-	xState->glContext = glXCreateContext(xState->display, visualInfo, NULL, GL_TRUE);
-	glXMakeCurrent(xState->display, xState->window, xState->glContext);
+	xState.glContext = glXCreateContext(xState.display, visualInfo, NULL, GL_TRUE);
+	glXMakeCurrent(xState.display, xState.window, xState.glContext);
 	
-	XStoreName(xState->display, xState->window, "Devilless");
-	XMapWindow(xState->display, xState->window);
-	XFlush(xState->display);
+	XStoreName(xState.display, xState.window, "Devilless");
+	XMapWindow(xState.display, xState.window);
+	XFlush(xState.display);
 	
-	xState->atomDeleteWindow = XInternAtom(xState->display, "WM_DELETE_WINDOW", False);
-	if (!XSetWMProtocols(xState->display, xState->rootWindow, &xState->atomDeleteWindow, 1))
+	xState.atomDeleteWindow = XInternAtom(xState.display, "WM_DELETE_WINDOW", False);
+	if (!XSetWMProtocols(xState.display, xState.rootWindow, &xState.atomDeleteWindow, 1)) {
 		printf("Warning: request to handle window deletion failed.\n");
+	}
 	
 	return 1;
 }
@@ -116,28 +118,27 @@ bool InitX() {
 int main() {
 	printf("hello sailor!\n");
 	
-	xState = Alloc(XState);
 	if (!InitX())
 		return 1;
 	
 	InitRenderer();
 	
-	GameState *gameState = Alloc(GameState);
-	GameInput *gameInput = Alloc(GameInput);
+	GameState gameState = {};
+	GameInput gameInput = {};
 	
-	GameInit(gameState, gameInput);
+	GameInit(&gameState, &gameInput);
 	
 	timeval timeVal;
 	gettimeofday(&timeVal, 0);
 	u64 frameStartCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
 	
 	while (IsRunning) {
-		for (u32 i = 0; i < ArrayCount(gameInput->key); i++)
+		for (u32 i = 0; i < ArrayCount(gameInput.key); i++)
 		{
-			gameInput->key[i].count = 0;
+			gameInput.key[i].count = 0;
 		}
 		
-		ProcessMessages(gameInput);
+		ProcessMessages(&gameInput);
 		
 		/*if (activeWindow)
 		{
@@ -153,22 +154,22 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 540, 480);
 		
-		GameUpdate(gameState, gameInput);
+		GameUpdate(&gameState, &gameInput);
 		
-		glXSwapBuffers(xState->display, xState->window);
+		glXSwapBuffers(xState.display, xState.window);
 		
 		gettimeofday(&timeVal, 0);
 		const u64 frameFinishCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
 		
 		u64 counterElapsed = frameFinishCounter - frameStartCounter;
-		gameState->deltaTime = Min(0.05f, (f32)counterElapsed / 1000000);
-		printf("%f\n", gameState->deltaTime);
+		gameState.deltaTime = Min(0.05f, (f32)counterElapsed / 1000000);
+		//printf("%f\n", gameState.deltaTime);
 		
 		frameStartCounter = frameFinishCounter;
 	}
 	
-	glXDestroyContext(xState->display, xState->glContext);
-	XDestroyWindow(xState->display, xState->window);
+	glXDestroyContext(xState.display, xState.glContext);
+	XDestroyWindow(xState.display, xState.window);
 	
 	return 0;
 }

@@ -16,7 +16,6 @@ IncludePaths=( \
 Libraries=( \
 	-lX11 \
 	-lGL \
-	-pthread \
 )
 
 cd ..

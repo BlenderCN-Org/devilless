@@ -71,4 +71,4 @@ struct RenderState {
 	ShaderInfo shaderInfos[SHADER_ID_COUNT];
 };
 
-extern RenderState *renderState;
+extern RenderState renderState;
