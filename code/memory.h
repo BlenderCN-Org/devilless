@@ -44,12 +44,12 @@ inline void * StackPushSize(GameStack *stack, uSize size)
 	return result;
 }
 
-inline MemoryInfo StackPushFile(GameStack *stack, char *name)
+inline MemoryInfo StackPushFile(GameStack *stack, char *fileName)
 {
 	Assert(stack->base != 0);
 	MemoryInfo result = {};
 	result.base = (u8 *)(stack->base) + stack->marker;
-	result.size = PlatformReadFile(result.base, name);
+	result.size = PlatformReadFile(result.base, fileName);
 	
 	Assert((stack->marker + result.size) <= stack->size);
 	stack->marker += result.size;

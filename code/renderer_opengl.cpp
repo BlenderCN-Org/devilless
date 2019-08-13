@@ -139,16 +139,18 @@ void InitShader(ShaderID shaderID) {
     CreateOpenGLShader(&renderState.shaderInfos[shaderID], headerCode, vertexCode, fragmentCode);
 }
 
-void InitMeshBuffers(MeshID meshID, void *vertices, u32 verticesSize, void *indices, u32 indicesSize) {
+void InitMeshBuffers(MeshID meshID, void *vertices, u32 vertexCount, void *indices, u32 indexCount) {
 	MeshInfo *meshInfo = &renderState.meshInfos[meshID];
+	meshInfo->indexCount = indexCount;
+	
 	glGenBuffers(1, &meshInfo->vertexVBO);
     glGenBuffers(1, &meshInfo->indexVBO);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u16) * indexCount, indices, GL_STATIC_DRAW);
 }
 
 void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
@@ -169,6 +171,5 @@ void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	glVertexAttribPointer(shaderInfo->attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glVertexAttribPointer(shaderInfo->attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
-	i32 indexCount = 3;
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
 }

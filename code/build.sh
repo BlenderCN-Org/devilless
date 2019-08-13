@@ -1,5 +1,5 @@
 
-Switches=(-g -O0 -Wall -Werror)
+Switches=(-g -O0 -Wall -Werror -Wno-write-strings)
 
 Files=( \
 	/home/nathan/work/devilless/code/asset_manager.cpp \

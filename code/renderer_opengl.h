@@ -51,11 +51,10 @@ typedef void glGetProgramInfoLog_(GLuint program, GLsizei maxLength, GLsizei *le
 extern glGetProgramInfoLog_ *glGetProgramInfoLog;
 
 struct MeshInfo {
-	GLuint vertexVBO;
-	u32 verticesSize;
+	u32 indexCount;
 	
+	GLuint vertexVBO;
 	GLuint indexVBO;
-	u32 indicesSize;
 };
 
 struct ShaderInfo {

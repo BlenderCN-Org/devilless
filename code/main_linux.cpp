@@ -3,6 +3,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <sys/time.h>
 
 #include "main_linux.h"
@@ -14,22 +18,53 @@
 XState xState = {};
 bool IsRunning = 1;
 
-u8 PlatformGetKeyCode(u64 keySymbol) {
-	return XKeysymToKeycode(xState.display, keySymbol);
-}
-
-uSize PlatformReadFile(void *base, char *name) {
-	return 0;
-}
-
 MemoryInfo Alloc(uSize size) {
 	MemoryInfo mi = {};
 	
 	const int prot = PROT_READ | PROT_WRITE;
 	const int flags = MAP_ANONYMOUS | MAP_PRIVATE;
 	mi.base = mmap(0, size, prot, flags, -1, 0);
+	mi.size = size;
 	
 	return mi;
+}
+
+u8 PlatformGetKeyCode(u64 keySymbol) {
+	return XKeysymToKeycode(xState.display, keySymbol);
+}
+
+uSize PlatformReadFile(void *base, char *fileName) {
+	int fileHandle = open(fileName, O_RDONLY);
+	if (fileHandle == -1)
+		return 0;
+	
+	struct stat fileStatus;
+	if (fstat(fileHandle, &fileStatus) == -1)
+	{
+		close(fileHandle);
+		return 0;
+	}
+	
+	if (fileStatus.st_size <= 0) {
+		close(fileHandle);
+		return 0;
+	}
+	
+	uSize bytesLeft = fileStatus.st_size;
+	u8 *tail = (u8 *)base;
+	while (bytesLeft)
+	{
+		iSize bytesRead = read(fileHandle, tail, bytesLeft);
+		if (bytesRead == -1)
+		{
+			close(fileHandle);
+			return 0;
+		}
+		bytesLeft -= bytesRead;
+		tail += bytesRead;
+	}
+	
+	return fileStatus.st_size;
 }
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
