@@ -2,18 +2,34 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <sys/mman.h>
 #include <sys/time.h>
 
 #include "main_linux.h"
 #include "main.h"
 #include "renderer.h"
 #include "game_math.h"
+#include "memory.h"
 
 XState xState = {};
 bool IsRunning = 1;
 
-u8 GetKeyCode(u64 keySymbol) {
+u8 PlatformGetKeyCode(u64 keySymbol) {
 	return XKeysymToKeycode(xState.display, keySymbol);
+}
+
+uSize PlatformReadFile(void *base, char *name) {
+	return 0;
+}
+
+MemoryInfo Alloc(uSize size) {
+	MemoryInfo mi = {};
+	
+	const int prot = PROT_READ | PROT_WRITE;
+	const int flags = MAP_ANONYMOUS | MAP_PRIVATE;
+	mi.base = mmap(0, size, prot, flags, -1, 0);
+	
+	return mi;
 }
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
@@ -125,8 +141,12 @@ int main() {
 	
 	GameState gameState = {};
 	GameInput gameInput = {};
+	TempMemory tempMemory = {};
 	
-	GameInit(&gameState, &gameInput);
+	MemoryInfo mi = Alloc(Megabytes(128));
+	StackInit(&tempMemory.stack, mi);
+	
+	GameInit(&gameState, &gameInput, &tempMemory);
 	
 	timeval timeVal;
 	gettimeofday(&timeVal, 0);
@@ -154,7 +174,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 540, 480);
 		
-		GameUpdate(&gameState, &gameInput);
+		GameUpdate(&gameState, &gameInput, &tempMemory);
 		
 		glXSwapBuffers(xState.display, xState.window);
 		

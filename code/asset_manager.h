@@ -1,6 +1,8 @@
+
 #pragma once
 
 #include "common.h"
+#include "memory.h"
 
 struct Vertex {
 	v3 position;
@@ -20,4 +22,4 @@ enum ShaderID {
 	SHADER_ID_COUNT,
 };
 
-void InitMesh(MeshID meshID);
+void InitMesh(MeshID meshID, TempMemory *tempMemory);

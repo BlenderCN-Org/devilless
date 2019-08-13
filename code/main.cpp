@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "main.h"
 #include "game_math.h"
+#include "platform.h"
 
 void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 	v2 input = {};
@@ -25,19 +26,19 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 	player->position += player->velocity * dt;
 }
 
-void GameInit(GameState *gameState, GameInput *gameInput) {
-	gameInput->keyMap[KeyUp] = GetKeyCode('W');
-	gameInput->keyMap[KeyDown] = GetKeyCode('S');
-	gameInput->keyMap[KeyLeft] = GetKeyCode('A');
-	gameInput->keyMap[KeyRight] = GetKeyCode('D');
-	gameInput->keyMap[KeyRun] = GetKeyCode('C');
-	gameInput->keyMap[KeyPause] = GetKeyCode('E');
+void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
+	gameInput->keyMap[KeyUp] = PlatformGetKeyCode('W');
+	gameInput->keyMap[KeyDown] = PlatformGetKeyCode('S');
+	gameInput->keyMap[KeyLeft] = PlatformGetKeyCode('A');
+	gameInput->keyMap[KeyRight] = PlatformGetKeyCode('D');
+	gameInput->keyMap[KeyRun] = PlatformGetKeyCode('C');
+	gameInput->keyMap[KeyPause] = PlatformGetKeyCode('E');
 	
 	InitShader(ShaderDebug);
-	InitMesh(MeshTriangle);
+	InitMesh(MeshTriangle, tempMemory);
 }
 
-void GameUpdate(GameState *gameState, GameInput *gameInput) {
+void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
 	UpdatePlayer(&gameState->player, gameState->deltaTime, gameInput);
 	
 	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix(540.0f / 480.0f);

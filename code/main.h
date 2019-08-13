@@ -1,5 +1,6 @@
 
 #include "common.h"
+#include "memory.h"
 
 struct Player {
 	v3 position;
@@ -79,6 +80,5 @@ inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 	return 0;
 }
 
-void GameInit(GameState *gameState, GameInput *gameInput);
-void GameUpdate(GameState *gameState, GameInput *gameInput);
-u8 GetKeyCode(u64 keySymbol);
+void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory);
+void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory);
