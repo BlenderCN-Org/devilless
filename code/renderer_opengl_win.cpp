@@ -2,13 +2,13 @@
 #include <stdio.h>
 
 #include "renderer_opengl_win.h"
-#include "renderer_opengl.cpp"
 #include "main_win.h"
+#include "renderer_opengl.cpp"
 
 _wglSwapIntervalExt *wglSwapIntervalExt;
 
-void InitGLExtensions() {
 #define GetAddress(name) name = (_##name *)wglGetProcAddress(#name)
+void InitGLExtensions() {
 	GetAddress(wglSwapIntervalExt);
 	
 	GetAddress(glBindBuffer);
