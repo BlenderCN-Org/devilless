@@ -2,7 +2,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <unistd.h>
 
 typedef int8_t i8;
 typedef uint8_t u8;
@@ -15,7 +14,16 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 typedef size_t uSize;
-typedef ssize_t iSize;
+
+#if defined _WIN64
+typedef i64 iSize;
+#elif defined _WIN32
+typedef i32 iSize;
+#elif defined __x86_64_ && !defined __ILP32__
+typedef i64 iSize;
+#else
+typedef i32 iSize;
+#endif
 
 #define Kilobytes(Value) ((Value)*1024LL)
 #define Megabytes(Value) (Kilobytes(Value)*1024LL)

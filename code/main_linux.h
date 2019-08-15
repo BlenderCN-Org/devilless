@@ -10,6 +10,7 @@ struct XState {
 	
 	Atom atomDeleteWindow;
 	
+	// TODO: move this to opengl x11
 	GLXContext glContext;
 };
 

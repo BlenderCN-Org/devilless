@@ -1,32 +1,31 @@
 
 #include "renderer_opengl.h"
-#include <GL/gl.h>
 #include "main.h"
 
-glGenBuffers_ *glGenBuffers;
-glBindBuffer_ *glBindBuffer;
-glBufferData_ *glBufferData;
+_glGenBuffers *glGenBuffers;
+_glBindBuffer *glBindBuffer;
+_glBufferData *glBufferData;
 
-glVertexAttribPointer_ *glVertexAttribPointer;
-glEnableVertexAttribArray_ *glEnableVertexAttribArray;
-glGetUniformLocation_ *glGetUniformLocation;
-glGetAttribLocation_ *glGetAttribLocation;
+_glVertexAttribPointer *glVertexAttribPointer;
+_glEnableVertexAttribArray *glEnableVertexAttribArray;
+_glGetUniformLocation *glGetUniformLocation;
+_glGetAttribLocation *glGetAttribLocation;
 
-glUniformMatrix4fv_ *glUniformMatrix4fv;
+_glUniformMatrix4fv *glUniformMatrix4fv;
 
-glCreateProgram_ *glCreateProgram;
-glCreateShader_ *glCreateShader;
-glLinkProgram_ *glLinkProgram;
-glAttachShader_ *glAttachShader;
-glShaderSource_ *glShaderSource;
-glCompileShader_ *glCompileShader;
-glDeleteShader_ *glDeleteShader;
-glUseProgram_ *glUseProgram;
+_glCreateProgram *glCreateProgram;
+_glCreateShader *glCreateShader;
+_glLinkProgram *glLinkProgram;
+_glAttachShader *glAttachShader;
+_glShaderSource *glShaderSource;
+_glCompileShader *glCompileShader;
+_glDeleteShader *glDeleteShader;
+_glUseProgram *glUseProgram;
 
-glGetShaderiv_ *glGetShaderiv;
-glGetShaderInfoLog_ *glGetShaderInfoLog;
-glGetProgramiv_ *glGetProgramiv;
-glGetProgramInfoLog_ *glGetProgramInfoLog;
+_glGetShaderiv *glGetShaderiv;
+_glGetShaderInfoLog *glGetShaderInfoLog;
+_glGetProgramiv *glGetProgramiv;
+_glGetProgramInfoLog *glGetProgramInfoLog;
 
 RenderState renderState = {};
 
@@ -172,4 +171,11 @@ void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	glVertexAttribPointer(shaderInfo->attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
 	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
+}
+
+void ClearFrame() {
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, 540, 480);
 }

@@ -27,13 +27,6 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 }
 
 void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
-	gameInput->keyMap[KeyUp] = PlatformGetKeyCode('W');
-	gameInput->keyMap[KeyDown] = PlatformGetKeyCode('S');
-	gameInput->keyMap[KeyLeft] = PlatformGetKeyCode('A');
-	gameInput->keyMap[KeyRight] = PlatformGetKeyCode('D');
-	gameInput->keyMap[KeyRun] = PlatformGetKeyCode('C');
-	gameInput->keyMap[KeyPause] = PlatformGetKeyCode('E');
-	
 	InitShader(ShaderDebug);
 	InitMesh(MeshTriangle, tempMemory);
 }

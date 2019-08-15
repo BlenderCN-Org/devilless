@@ -2,6 +2,7 @@
 #pragma once
 
 #include <xmmintrin.h>
+#include <emmintrin.h>
 #include "common.h"
 
 #define EPSILON 0.001f

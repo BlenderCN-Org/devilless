@@ -1,14 +1,15 @@
 
-#include "renderer_opengl_x11.h"
-#include "renderer_opengl.h"
-#include "main_linux.h"
 #include <stdio.h>
+
+#include "renderer_opengl_x11.h"
+#include "main_linux.h"
+#include "renderer_opengl.cpp"
 
 glXSwapIntervalEXT_ *glXSwapIntervalEXT;
 glXSwapIntervalMESA_ *glXSwapIntervalMESA;
 glXSwapIntervalSGI_ *glXSwapIntervalSGI;
 
-void InitGlExtensions() {
+void InitGLExtensions() {
 	glXSwapIntervalEXT = (glXSwapIntervalEXT_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalEXT");
 	glXSwapIntervalMESA = (glXSwapIntervalMESA_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalMESA");
 	glXSwapIntervalSGI = (glXSwapIntervalSGI_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalSGI");
@@ -40,15 +41,14 @@ void InitGlExtensions() {
 }
 
 void SetVSync(bool on) {
-	if (glXSwapIntervalEXT) {
+	if (glXSwapIntervalEXT)
 		glXSwapIntervalEXT(xState.display, xState.window, on);
-	}
-	else if (glXSwapIntervalMESA) {
+	
+	if (glXSwapIntervalMESA)
 		glXSwapIntervalMESA(on);
-	}
-	else if (glXSwapIntervalSGI) {
+	
+	if (glXSwapIntervalSGI)
 		glXSwapIntervalSGI(on);
-	}
 }
 
 void InitRenderer() {
@@ -58,6 +58,10 @@ void InitRenderer() {
 	
 	printf("ver: %s, ven: %s, ren: %s\n", GL_version, GL_vendor, GL_renderer);
 	
-	InitGlExtensions();
+	InitGLExtensions();
 	SetVSync(1);
+}
+
+void PresentFrame() {
+	glXSwapBuffers(xState.display, xState.window);
 }

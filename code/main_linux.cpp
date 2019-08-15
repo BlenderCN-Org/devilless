@@ -21,9 +21,7 @@ bool IsRunning = 1;
 MemoryInfo Alloc(uSize size) {
 	MemoryInfo mi = {};
 	
-	const int prot = PROT_READ | PROT_WRITE;
-	const int flags = MAP_ANONYMOUS | MAP_PRIVATE;
-	mi.base = mmap(0, size, prot, flags, -1, 0);
+	mi.base = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE;, -1, 0);
 	mi.size = size;
 	
 	return mi;
@@ -64,6 +62,7 @@ uSize PlatformReadFile(void *base, char *fileName) {
 		tail += bytesRead;
 	}
 	
+	close(fileHandle);
 	return fileStatus.st_size;
 }
 

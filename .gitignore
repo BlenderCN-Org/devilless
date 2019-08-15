@@ -25,12 +25,16 @@
 *.la
 *.a
 *.lib
+*.ilk
 
 # Executables
 *.exe
 *.out
 *.app
 devilless
+
+# Debug
+*.pdb
 
 # VSCode
 .vscode
