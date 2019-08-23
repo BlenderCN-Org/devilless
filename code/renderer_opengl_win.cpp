@@ -43,14 +43,6 @@ void SetVSync(bool on) {
 }
 
 bool InitRenderer() {
-	char *GL_version=(char *)glGetString(GL_VERSION);
-    char *GL_vendor=(char *)glGetString(GL_VENDOR);
-    char *GL_renderer=(char *)glGetString(GL_RENDERER);
-	
-	printf("ver: %s, ven: %s, ren: %s\n", GL_version, GL_vendor, GL_renderer);
-	
-	InitGLExtensions();
-	
 	PIXELFORMATDESCRIPTOR pfd = {};
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
     pfd.nVersion = 1;
@@ -73,6 +65,12 @@ bool InitRenderer() {
 	InitGLExtensions();
 	
 	SetVSync(1);
+	
+	char *GL_version=(char *)glGetString(GL_VERSION);
+    char *GL_vendor=(char *)glGetString(GL_VENDOR);
+    char *GL_renderer=(char *)glGetString(GL_RENDERER);
+	
+	printf("ver: %s, ven: %s, ren: %s\n", GL_version, GL_vendor, GL_renderer);
 	
 	return 1;
 }

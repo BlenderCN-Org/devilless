@@ -50,6 +50,10 @@ uSize PlatformReadFile(void *base, char *fileName) {
 	return fileSize.QuadPart;
 }
 
+v2i PlatformGetScreenSize() {
+	return winState.screenSize;
+}
+
 void InitInput(GameInput *gameInput) {
 	// TODO: load imputs from file, if no file exists create one with default inputs
 	gameInput->keyMap[KeyUp] = 'W';
@@ -58,6 +62,12 @@ void InitInput(GameInput *gameInput) {
 	gameInput->keyMap[KeyRight] = 'D';
 	gameInput->keyMap[KeyRun] = VK_LSHIFT;
 	gameInput->keyMap[KeyPause] = VK_ESCAPE;
+}
+
+void OnScreenSizeChange() {
+	RECT rect;
+	GetClientRect(winState.window, &rect);
+	winState.screenSize = V2I(rect.right, rect.bottom);
 }
 
 LRESULT CALLBACK MainWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
@@ -82,9 +92,9 @@ LRESULT CALLBACK MainWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM
             break;
         }
 		
-		/*case WM_EXITSIZEMOVE:
+		case WM_EXITSIZEMOVE:
 		{
-			ShouldResize = 1;
+			OnScreenSizeChange();
 			
 			break;
 		}
@@ -92,10 +102,10 @@ LRESULT CALLBACK MainWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM
 		case WM_SIZE:
 		{
 			if (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
-				ShouldResize = 1;
+				OnScreenSizeChange();
 			
 			break;
-		}*/
+		}
 		
         default:
         {
@@ -208,13 +218,22 @@ bool InitWin() {
 	if (!RegisterClass(&windowClass))
         return 0;
 	
-	winState.window = CreateWindowEx(0, windowClass.lpszClassName, "Devilless", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 0, 0, 1280, 720, 0, 0, winState.instance, 0);
+	winState.screenSize = V2I(1280, 720);
+	winState.window = CreateWindowEx(0, windowClass.lpszClassName, "Devilless", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 0, 0, winState.screenSize.x, winState.screenSize.y, 0, 0, 0, 0);
+	OnScreenSizeChange();
 	winState.windowDC = GetDC(winState.window);
 	
 	return 1;
 }
 
 int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode) {
+	AllocConsole();
+	freopen("CONIN$", "r",stdin);
+	freopen("CONOUT$", "w",stdout);
+	freopen("CONOUT$", "w",stderr);
+	
+	winState.instance = instance;
+	
 	printf("hello sailor!\n");
 	
 	if (!InitWin())
@@ -255,6 +274,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 		{
 			ClearInput();
 		}*/
+		
 		
 		ClearFrame();
 		

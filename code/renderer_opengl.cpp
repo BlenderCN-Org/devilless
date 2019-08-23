@@ -177,5 +177,6 @@ void ClearFrame() {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, 540, 480);
+	v2i screenSize = PlatformGetScreenSize();
+	glViewport(0, 0, screenSize.x, screenSize.y);
 }

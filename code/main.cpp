@@ -34,6 +34,7 @@ void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory
 void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
 	UpdatePlayer(&gameState->player, gameState->deltaTime, gameInput);
 	
-	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix(540.0f / 480.0f);
+	v2i screenSize = PlatformGetScreenSize();
+	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix((f32)screenSize.x / (f32)screenSize.y);
 	RenderMesh(MeshTriangle, M4Identity(), vp);
 }
