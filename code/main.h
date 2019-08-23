@@ -1,6 +1,7 @@
 
 #include "common.h"
 #include "memory.h"
+#include "asset_manager.h"
 
 struct Player {
 	v3 position;
@@ -13,6 +14,8 @@ struct GameState {
 	f32 deltaTime;
 	
 	Player player;
+	
+	Skeleton skeletons[SKELETON_ID_COUNT];
 };
 
 struct InputKey
@@ -41,12 +44,12 @@ struct GameInput
 	i16 wheelDelta;
 	
 	u8 keyMap[KEY_TYPE_COUNT];
-	InputKey key[256];
+	InputKey keys[256];
 };
 
 inline bool KeyWasDown(KeyType keyCode, GameInput *gameInput)
 {
-	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
+	InputKey inputKey = gameInput->keys[gameInput->keyMap[keyCode]];
 	if (inputKey.isDown)
 		return 1;
 	
@@ -58,7 +61,7 @@ inline bool KeyWasDown(KeyType keyCode, GameInput *gameInput)
 
 inline bool KeyWasPressed(KeyType keyCode, GameInput *gameInput)
 {
-	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
+	InputKey inputKey = gameInput->keys[gameInput->keyMap[keyCode]];
 	if (inputKey.isDown && inputKey.count >= 1)
 		return 1;
 	
@@ -70,7 +73,7 @@ inline bool KeyWasPressed(KeyType keyCode, GameInput *gameInput)
 
 inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 {
-	InputKey inputKey = gameInput->key[gameInput->keyMap[keyCode]];
+	InputKey inputKey = gameInput->keys[gameInput->keyMap[keyCode]];
 	if (!inputKey.isDown && inputKey.count >= 1)
 		return 1;
 	

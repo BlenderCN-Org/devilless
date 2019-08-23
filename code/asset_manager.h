@@ -16,8 +16,35 @@ struct Vertex {
 struct SkinVertex {
 	v3 position;
 	v3 normal;
-	i32 groupId[3];
-	f32 groupWeight[3];
+	i32 groupIDs[3];
+	f32 groupWeights[3];
+};
+
+struct AnimationKey
+{
+	m4 transform;
+	f32 time;
+	//v3 position;
+	//quat rotation;
+};
+
+struct Animation
+{
+	i32 keyCounts[BONE_COUNT];
+	AnimationKey *keys[BONE_COUNT];
+};
+
+struct Child
+{
+	i32 childCount;
+	i32 childIDs[4];
+};
+
+struct Skeleton
+{
+	m4 inverses[BONE_COUNT];
+	
+	Child children[BONE_COUNT];
 };
 
 enum MeshID {
@@ -32,6 +59,12 @@ enum SkinID {
 	SKIN_ID_COUNT,
 };
 
+enum SkeletonID {
+	SkeletonFemale,
+	
+	SKELETON_ID_COUNT,
+};
+
 enum ShaderID {
 	ShaderDebug,
 	
@@ -40,3 +73,4 @@ enum ShaderID {
 
 void InitMesh(MeshID meshID, char *fileName, TempMemory *tempMemory);
 void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory);
+Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory);

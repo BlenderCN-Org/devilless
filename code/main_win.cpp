@@ -146,7 +146,7 @@ void ProcessMessages(GameInput *gameInput)
 				if ((u32)message.wParam == VK_F4 && message.lParam & (1 << 29))
 					IsRunning = false;
 				
-				ProcessInput(&gameInput->key[(u32)message.wParam], 1);
+				ProcessInput(&gameInput->keys[(u32)message.wParam], 1);
 				TranslateMessage(&message);
 				break;
 			}
@@ -154,40 +154,40 @@ void ProcessMessages(GameInput *gameInput)
 			case WM_SYSKEYUP:
 			case WM_KEYUP:
 			{
-				ProcessInput(&gameInput->key[(u32)message.wParam], 0);
+				ProcessInput(&gameInput->keys[(u32)message.wParam], 0);
 				break;
 			}
             
             case WM_LBUTTONDOWN:
 			{
-				ProcessInput(&gameInput->key[VK_LBUTTON], 1);
+				ProcessInput(&gameInput->keys[VK_LBUTTON], 1);
 				break;
 			}
             case WM_LBUTTONUP:
             {
-                ProcessInput(&gameInput->key[VK_LBUTTON], 0);
+                ProcessInput(&gameInput->keys[VK_LBUTTON], 0);
                 break;
             }
             
             case WM_RBUTTONDOWN:
 			{
-                ProcessInput(&gameInput->key[VK_RBUTTON], 1);
+                ProcessInput(&gameInput->keys[VK_RBUTTON], 1);
                 break;
             }
             case WM_RBUTTONUP:
             {
-                ProcessInput(&gameInput->key[VK_RBUTTON], 0);
+                ProcessInput(&gameInput->keys[VK_RBUTTON], 0);
                 break;
             }
 			
 			case WM_MBUTTONDOWN:
 			{
-                ProcessInput(&gameInput->key[VK_MBUTTON], 1);
+                ProcessInput(&gameInput->keys[VK_MBUTTON], 1);
                 break;
             }
             case WM_MBUTTONUP:
             {
-                ProcessInput(&gameInput->key[VK_MBUTTON], 0);
+                ProcessInput(&gameInput->keys[VK_MBUTTON], 0);
                 break;
             }
 			
@@ -259,9 +259,9 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	QueryPerformanceCounter(&frameStartCounter);
 	
 	while (IsRunning) {
-		for (u32 i = 0; i < ArrayCount(gameInput.key); i++)
+		for (u32 i = 0; i < ArrayCount(gameInput.keys); i++)
 		{
-			gameInput.key[i].count = 0;
+			gameInput.keys[i].count = 0;
 		}
 		
 		ProcessMessages(&gameInput);

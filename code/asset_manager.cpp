@@ -49,3 +49,37 @@ void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory) {
 	
 	TempMemoryPop(tempMemory);
 }
+
+Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory) {
+	TempMemoryPush(tempMemory);
+	
+	MemoryInfo result = StackPushFile(&tempMemory->stack, fileName);
+	Assert(result.size != 0);
+	
+	Skeleton skeleton = {};
+	
+	u8 *tail = (u8 *)result.base;
+	i32 boneCount = *((i32 *)tail);
+	tail += sizeof(f32);
+	
+	Assert(boneCount == BONE_COUNT);
+	
+	for (i32 i = 0; i < BONE_COUNT; i++) {
+		skeleton.inverses[i] = *((m4 *)tail);
+		tail += sizeof(m4);
+		
+		skeleton.children[i].childCount = *((i32 *)tail);
+		tail += sizeof(i32);
+		
+		Assert(skeleton.children[i].childCount <= 4);
+		
+		for (i32 j = 0; j < skeleton.children[i].childCount; j++) {
+			skeleton.children[i].childIDs[j] = *((i32 *)tail);
+			tail += sizeof(i32);
+		}
+	}
+	
+	TempMemoryPop(tempMemory);
+	
+	return skeleton;
+}

@@ -30,6 +30,7 @@ void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory
 	InitShader(ShaderDebug);
 	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
 	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
+	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/female.skel", tempMemory);
 	
 	Assert(tempMemory->tempCount == 0);
 }
