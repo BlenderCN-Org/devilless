@@ -21,14 +21,10 @@ bool IsRunning = 1;
 MemoryInfo Alloc(uSize size) {
 	MemoryInfo mi = {};
 	
-	mi.base = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE;, -1, 0);
+	mi.base = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	mi.size = size;
 	
 	return mi;
-}
-
-u8 PlatformGetKeyCode(u64 keySymbol) {
-	return XKeysymToKeycode(xState.display, keySymbol);
 }
 
 uSize PlatformReadFile(void *base, char *fileName) {
@@ -64,6 +60,16 @@ uSize PlatformReadFile(void *base, char *fileName) {
 	
 	close(fileHandle);
 	return fileStatus.st_size;
+}
+
+void InitInput(GameInput *gameInput) {
+	// TODO: load imputs from file, if no file exists create one with default inputs
+	gameInput->keyMap[KeyUp] = XKeysymToKeycode(xState.display, 'W');
+	gameInput->keyMap[KeyDown] = XKeysymToKeycode(xState.display, 'S');
+	gameInput->keyMap[KeyLeft] = XKeysymToKeycode(xState.display, 'A');
+	gameInput->keyMap[KeyRight] = XKeysymToKeycode(xState.display, 'D');
+	gameInput->keyMap[KeyRun] = XKeysymToKeycode(xState.display, XK_Shift_L);
+	gameInput->keyMap[KeyPause] = XKeysymToKeycode(xState.display, XK_Escape);
 }
 
 void ProcessInput(InputKey *inputKey, bool isDown) {
@@ -179,6 +185,8 @@ int main() {
 	
 	MemoryInfo mi = Alloc(Megabytes(128));
 	StackInit(&tempMemory.stack, mi);
+	
+	InitInput(&gameInput);
 	
 	GameInit(&gameState, &gameInput, &tempMemory);
 	

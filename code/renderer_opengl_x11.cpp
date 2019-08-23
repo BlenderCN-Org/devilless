@@ -5,39 +5,40 @@
 #include "main_linux.h"
 #include "renderer_opengl.cpp"
 
-glXSwapIntervalEXT_ *glXSwapIntervalEXT;
-glXSwapIntervalMESA_ *glXSwapIntervalMESA;
-glXSwapIntervalSGI_ *glXSwapIntervalSGI;
+_glXSwapIntervalEXT *glXSwapIntervalEXT;
+_glXSwapIntervalMESA *glXSwapIntervalMESA;
+_glXSwapIntervalSGI *glXSwapIntervalSGI;
 
+#define GetAddress(name) name = (_##name *)glXGetProcAddress((const GLubyte *)#name)
 void InitGLExtensions() {
-	glXSwapIntervalEXT = (glXSwapIntervalEXT_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalEXT");
-	glXSwapIntervalMESA = (glXSwapIntervalMESA_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalMESA");
-	glXSwapIntervalSGI = (glXSwapIntervalSGI_ *)glXGetProcAddress((const GLubyte *)"glXSwapIntervalSGI");
+	GetAddress(glXSwapIntervalEXT);
+	GetAddress(glXSwapIntervalMESA);
+	GetAddress(glXSwapIntervalSGI);
 	
-	glBindBuffer = (glBindBuffer_ *)glXGetProcAddress((const GLubyte *)"glBindBuffer");
-	glBufferData = (glBufferData_ *)glXGetProcAddress((const GLubyte *)"glBufferData");
-	glGenBuffers = (glGenBuffers_ *)glXGetProcAddress((const GLubyte *)"glGenBuffers");
+	GetAddress(glBindBuffer);
+	GetAddress(glBufferData);
+	GetAddress(glGenBuffers);
 	
-	glVertexAttribPointer = (glVertexAttribPointer_ *)glXGetProcAddress((const GLubyte *)"glVertexAttribPointer");
-	glEnableVertexAttribArray = (glEnableVertexAttribArray_ *)glXGetProcAddress((const GLubyte *)"glEnableVertexAttribArray");
-	glGetUniformLocation = (glGetUniformLocation_ *)glXGetProcAddress((const GLubyte *)"glGetUniformLocation");
-	glGetAttribLocation = (glGetAttribLocation_ *)glXGetProcAddress((const GLubyte *)"glGetAttribLocation");
+	GetAddress(glVertexAttribPointer);
+	GetAddress(glEnableVertexAttribArray);
+	GetAddress(glGetUniformLocation);
+	GetAddress(glGetAttribLocation);
 	
-	glUniformMatrix4fv = (glUniformMatrix4fv_ *)glXGetProcAddress((const GLubyte *)"glUniformMatrix4fv");
+	GetAddress(glUniformMatrix4fv);
 	
-	glCreateProgram = (glCreateProgram_ *)glXGetProcAddress((const GLubyte *)"glCreateProgram");
-	glCreateShader = (glCreateShader_ *)glXGetProcAddress((const GLubyte *)"glCreateShader");
-	glLinkProgram = (glLinkProgram_ *)glXGetProcAddress((const GLubyte *)"glLinkProgram");
-	glAttachShader = (glAttachShader_ *)glXGetProcAddress((const GLubyte *)"glAttachShader");
-	glShaderSource = (glShaderSource_ *)glXGetProcAddress((const GLubyte *)"glShaderSource");
-	glCompileShader = (glCompileShader_ *)glXGetProcAddress((const GLubyte *)"glCompileShader");
-	glDeleteShader = (glDeleteShader_ *)glXGetProcAddress((const GLubyte *)"glDeleteShader");
-	glUseProgram = (glUseProgram_ *)glXGetProcAddress((const GLubyte *)"glUseProgram");
+	GetAddress(glCreateProgram);
+	GetAddress(glCreateShader);
+	GetAddress(glLinkProgram);
+	GetAddress(glAttachShader);
+	GetAddress(glShaderSource);
+	GetAddress(glCompileShader);
+	GetAddress(glDeleteShader);
+	GetAddress(glUseProgram);
 	
-	glGetShaderiv = (glGetShaderiv_ *)glXGetProcAddress((const GLubyte *)"glGetShaderiv");
-	glGetShaderInfoLog = (glGetShaderInfoLog_ *)glXGetProcAddress((const GLubyte *)"glGetShaderInfoLog");
-	glGetProgramiv = (glGetProgramiv_ *)glXGetProcAddress((const GLubyte *)"glGetProgramiv");
-	glGetProgramInfoLog = (glGetProgramInfoLog_ *)glXGetProcAddress((const GLubyte *)"glGetProgramInfoLog");
+	GetAddress(glGetShaderiv);
+	GetAddress(glGetShaderInfoLog);
+	GetAddress(glGetProgramiv);
+	GetAddress(glGetProgramInfoLog);
 }
 
 void SetVSync(bool on) {
