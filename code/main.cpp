@@ -28,7 +28,10 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 
 void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
 	InitShader(ShaderDebug);
-	InitMesh(MeshTriangle, tempMemory);
+	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
+	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
+	
+	Assert(tempMemory->tempCount == 0);
 }
 
 void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
@@ -36,5 +39,7 @@ void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemo
 	
 	v2i screenSize = PlatformGetScreenSize();
 	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix((f32)screenSize.x / (f32)screenSize.y);
-	RenderMesh(MeshTriangle, M4Identity(), vp);
+	RenderMesh(MeshGirl, M4Identity(), vp);
+	
+	Assert(tempMemory->tempCount == 0);
 }

@@ -152,6 +152,20 @@ void InitMeshBuffers(MeshID meshID, void *vertices, u32 vertexCount, void *indic
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u16) * indexCount, indices, GL_STATIC_DRAW);
 }
 
+void InitSkinBuffers(SkinID skinID, void *vertices, u32 vertexCount, void *indices, u32 indexCount) {
+	MeshInfo *meshInfo = &renderState.skinInfos[skinID];
+	meshInfo->indexCount = indexCount;
+	
+	glGenBuffers(1, &meshInfo->vertexVBO);
+	glGenBuffers(1, &meshInfo->indexVBO);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(SkinVertex) * vertexCount, vertices, GL_STATIC_DRAW);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u16) * indexCount, indices, GL_STATIC_DRAW);
+}
+
 void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	const MeshInfo *meshInfo = &renderState.meshInfos[meshID];
 	const ShaderInfo *shaderInfo = &renderState.shaderInfos[ShaderDebug];

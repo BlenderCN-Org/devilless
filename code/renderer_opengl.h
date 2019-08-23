@@ -67,6 +67,7 @@ struct ShaderInfo {
 
 struct RenderState {
 	MeshInfo meshInfos[MESH_ID_COUNT];
+	MeshInfo skinInfos[SKIN_ID_COUNT];
 	ShaderInfo shaderInfos[SHADER_ID_COUNT];
 };
 
