@@ -96,6 +96,8 @@ Animation InitAnimation(char *fileName, GameStack *stack) {
 	u32 boneCount = *((u32 *)tail);
 	tail += sizeof(u32);
 	
+	Assert(boneCount == BONE_COUNT);
+	
 	for (i32 i = 0; i < BONE_COUNT; i++) {
 		animation.keys[i] = ((AnimationKey *)tail);
 		tail += sizeof(AnimationKey);

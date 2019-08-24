@@ -27,7 +27,7 @@ MemoryInfo Alloc(uSize size) {
 	return mi;
 }
 
-uSize PlatformReadFile(void *base, char *fileName) {
+uSize ReadFile(void *base, char *fileName) {
 	int fileHandle = open(fileName, O_RDONLY);
 	if (fileHandle == -1)
 		return 0;
@@ -62,6 +62,10 @@ uSize PlatformReadFile(void *base, char *fileName) {
 	return fileStatus.st_size;
 }
 
+v2i GetScreenSize() {
+	return xState.screenSize;
+}
+
 void InitInput(GameInput *gameInput) {
 	// TODO: load imputs from file, if no file exists create one with default inputs
 	gameInput->keyMap[KeyUp] = XKeysymToKeycode(xState.display, 'W');
@@ -91,6 +95,7 @@ void ProcessMessages(GameInput *gameInput) {
 					IsRunning = 0;
 				break;
 			}
+			
 			case ClientMessage:
 			{
 				XClientMessageEvent *e = (XClientMessageEvent *)&event;
@@ -98,16 +103,25 @@ void ProcessMessages(GameInput *gameInput) {
 					IsRunning = 0;
 				break;
 			}
+			
+			case ConfigureNotify:
+			{
+				XConfigureEvent *e = (XConfigureEvent *)&event;
+				xState.screenSize = V2I(e->width, e->height);
+				printf("received configure notification: %d, %d\n", e->width, e->height);
+			}
+			
 			case KeyPress:
 			{
 				XKeyPressedEvent *e = (XKeyPressedEvent *)&event;
-				ProcessInput(&gameInput->key[e->keycode], 1);
+				ProcessInput(&gameInput->keys[e->keycode], 1);
 				break;
 			}
+			
 			case KeyRelease:
 			{
 				XKeyPressedEvent *e = (XKeyPressedEvent *)&event;
-				ProcessInput(&gameInput->key[e->keycode], 0);
+				ProcessInput(&gameInput->keys[e->keycode], 0);
 				break;
 			}
 		}
@@ -124,7 +138,7 @@ bool InitX() {
 	}
 	
 	xState.rootWindow = DefaultRootWindow(xState.display);
-	xState.defaultScreen = DefaultScreen(xState.display);
+	xState.screenNumber = DefaultScreen(xState.display);
 	
 	GLint glxAttribs[] = {
 		GLX_RGBA,
@@ -138,7 +152,7 @@ bool InitX() {
 		GLX_SAMPLES,        0,
 		None
 	};
-	XVisualInfo* visualInfo = glXChooseVisual(xState.display, xState.defaultScreen, glxAttribs);
+	XVisualInfo* visualInfo = glXChooseVisual(xState.display, xState.screenNumber, glxAttribs);
 	
 	if (!visualInfo) {
 		printf("Error: X11 couldn't match requested visual info.\n");
@@ -147,7 +161,7 @@ bool InitX() {
 		
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = XCreateColormap(xState.display, xState.rootWindow, visualInfo->visual, AllocNone);
-	windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask;
+	windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
 	
 	xState.window = XCreateWindow(xState.display, xState.rootWindow, 0, 0, 540, 480, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWBackPixel | CWColormap | CWEventMask, &windowAttributes);
 	
@@ -179,25 +193,27 @@ int main() {
 	
 	InitRenderer();
 	
-	GameState gameState = {};
+	GameStack mainStack = {};
 	GameInput gameInput = {};
 	TempMemory tempMemory = {};
 	
-	MemoryInfo mi = Alloc(Megabytes(128));
-	StackInit(&tempMemory.stack, mi);
+	InitStack(&mainStack, Alloc(Megabytes(600)));
+	InitStack(&tempMemory.stack, Alloc(Megabytes(150)));
 	
 	InitInput(&gameInput);
 	
-	GameInit(&gameState, &gameInput, &tempMemory);
+	GameInit(&mainStack, &tempMemory);
 	
 	timeval timeVal;
 	gettimeofday(&timeVal, 0);
 	u64 frameStartCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
 	
+	f32 deltaTime = 0;
+	
 	while (IsRunning) {
-		for (u32 i = 0; i < ArrayCount(gameInput.key); i++)
+		for (u32 i = 0; i < ArrayCount(gameInput.keys); i++)
 		{
-			gameInput.key[i].count = 0;
+			gameInput.keys[i].count = 0;
 		}
 		
 		ProcessMessages(&gameInput);
@@ -211,20 +227,17 @@ int main() {
 			ClearInput();
 		}*/
 		
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, 540, 480);
+		ClearFrame();
 		
-		GameUpdate(&gameState, &gameInput, &tempMemory);
+		GameUpdate(&mainStack, &gameInput, deltaTime, &tempMemory);
 		
-		glXSwapBuffers(xState.display, xState.window);
+		PresentFrame();
 		
 		gettimeofday(&timeVal, 0);
 		const u64 frameFinishCounter = timeVal.tv_sec * 1000000 + timeVal.tv_usec;
 		
 		u64 counterElapsed = frameFinishCounter - frameStartCounter;
-		gameState.deltaTime = Min(0.05f, (f32)counterElapsed / 1000000);
+		deltaTime = Min(0.05f, (f32)counterElapsed / 1000000);
 		//printf("%f\n", gameState.deltaTime);
 		
 		frameStartCounter = frameFinishCounter;
