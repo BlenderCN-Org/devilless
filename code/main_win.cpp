@@ -20,7 +20,7 @@ MemoryInfo Alloc(uSize size) {
 	return mi;
 }
 
-uSize PlatformReadFile(void *base, char *fileName) {
+uSize ReadFile(void *base, char *fileName) {
 	HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
 	if (!fileHandle)
 		return 0;
@@ -50,7 +50,7 @@ uSize PlatformReadFile(void *base, char *fileName) {
 	return fileSize.QuadPart;
 }
 
-v2i PlatformGetScreenSize() {
+v2i GetScreenSize() {
 	return winState.screenSize;
 }
 
@@ -241,22 +241,25 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	
 	InitRenderer();
 	
-	GameState gameState = {};
+	GameStack mainStack = {};
 	GameInput gameInput = {};
 	TempMemory tempMemory = {};
 	
-	MemoryInfo mi = Alloc(Megabytes(128));
-	StackInit(&tempMemory.stack, mi);
+	InitStack(&mainStack, Alloc(Megabytes(600)));
+	
+	InitStack(&tempMemory.stack, Alloc(Megabytes(150)));
 	
 	InitInput(&gameInput);
 	
-	GameInit(&gameState, &gameInput, &tempMemory);
+	GameInit(&mainStack, &tempMemory);
 	
 	LARGE_INTEGER countFrequency;
 	QueryPerformanceFrequency(&countFrequency);
 	
 	LARGE_INTEGER frameStartCounter;
 	QueryPerformanceCounter(&frameStartCounter);
+	
+	f32 deltaTime = 0.0f;
 	
 	while (IsRunning) {
 		for (u32 i = 0; i < ArrayCount(gameInput.keys); i++)
@@ -278,7 +281,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 		
 		ClearFrame();
 		
-		GameUpdate(&gameState, &gameInput, &tempMemory);
+		GameUpdate(&mainStack, &gameInput, deltaTime, &tempMemory);
 		
 		PresentFrame();
 		
@@ -286,7 +289,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 		QueryPerformanceCounter(&frameFinishCounter);
 		
 		u64 counterElapsed = frameFinishCounter.QuadPart - frameStartCounter.QuadPart;
-		gameState.deltaTime = Min(0.05f, (f32)counterElapsed / (f32)countFrequency.QuadPart);
+		deltaTime = Min(0.05f, (f32)counterElapsed / (f32)countFrequency.QuadPart);
 		//printf("%f\n", gameState.deltaTime);
 		
 		frameStartCounter = frameFinishCounter;

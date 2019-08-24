@@ -2,10 +2,12 @@
 #include "asset_manager.h"
 #include "renderer.h"
 
+
+// TODO: cleanup casts and pointer movement with macros
 void InitMesh(MeshID meshID, char *fileName, TempMemory *tempMemory) {
 	TempMemoryPush(tempMemory);
 	
-	MemoryInfo result = StackPushFile(&tempMemory->stack, fileName);
+	MemoryInfo result = PushFile(&tempMemory->stack, fileName);
 	
 	Assert(result.size != 0);
 	
@@ -29,7 +31,7 @@ void InitMesh(MeshID meshID, char *fileName, TempMemory *tempMemory) {
 void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory) {
 	TempMemoryPush(tempMemory);
 	
-	MemoryInfo result = StackPushFile(&tempMemory->stack, fileName);
+	MemoryInfo result = PushFile(&tempMemory->stack, fileName);
 	
 	Assert(result.size != 0);
 	
@@ -53,14 +55,14 @@ void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory) {
 Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory) {
 	TempMemoryPush(tempMemory);
 	
-	MemoryInfo result = StackPushFile(&tempMemory->stack, fileName);
+	MemoryInfo result = PushFile(&tempMemory->stack, fileName);
 	Assert(result.size != 0);
 	
 	Skeleton skeleton = {};
 	
 	u8 *tail = (u8 *)result.base;
-	i32 boneCount = *((i32 *)tail);
-	tail += sizeof(f32);
+	u32 boneCount = *((u32 *)tail);
+	tail += sizeof(u32);
 	
 	Assert(boneCount == BONE_COUNT);
 	
@@ -82,4 +84,22 @@ Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory) {
 	TempMemoryPop(tempMemory);
 	
 	return skeleton;
+}
+
+Animation InitAnimation(char *fileName, GameStack *stack) {
+	MemoryInfo result = PushFile(stack, fileName);
+	Assert(result.size != 0);
+	
+	Animation animation = {};
+	
+	u8 *tail = (u8 *)result.base;
+	u32 boneCount = *((u32 *)tail);
+	tail += sizeof(u32);
+	
+	for (i32 i = 0; i < BONE_COUNT; i++) {
+		animation.keys[i] = ((AnimationKey *)tail);
+		tail += sizeof(AnimationKey);
+	}
+	
+	return animation;
 }

@@ -1,4 +1,7 @@
 #pragma once
 
-uSize PlatformReadFile(void *base, char *fileName);
-v2i PlatformGetScreenSize();
+struct GameInput;
+
+uSize ReadFile(void *base, char *fileName);
+v2i GetScreenSize();
+void InitInput(GameInput *gameInput);

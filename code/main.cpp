@@ -26,19 +26,25 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 	player->position += player->velocity * dt;
 }
 
-void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
+void GameInit(GameStack *mainStack, TempMemory *tempMemory) {
+	GameState *gameState = PushStruct(mainStack, GameState);
+	
+	InitStack(&gameState->assetsStack, PushMemoryInfo(mainStack, Megabytes(200)));
+	
 	InitShader(ShaderDebug);
 	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
 	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
 	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/female.skel", tempMemory);
+	gameState->animations[AnimationFemaleWalk] = InitAnimation("assets/female_walk.anim", &gameState->assetsStack);
 	
 	Assert(tempMemory->tempCount == 0);
 }
 
-void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory) {
-	UpdatePlayer(&gameState->player, gameState->deltaTime, gameInput);
+void GameUpdate(GameStack *mainStack, GameInput *gameInput, f32 deltaTime, TempMemory *tempMemory) {
+	GameState *gameState = (GameState *)mainStack->base;
+	UpdatePlayer(&gameState->player, deltaTime, gameInput);
 	
-	v2i screenSize = PlatformGetScreenSize();
+	v2i screenSize = GetScreenSize();
 	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix((f32)screenSize.x / (f32)screenSize.y);
 	RenderMesh(MeshGirl, M4Identity(), vp);
 	

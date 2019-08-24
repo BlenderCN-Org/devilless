@@ -65,6 +65,12 @@ enum SkeletonID {
 	SKELETON_ID_COUNT,
 };
 
+enum AnimationID {
+	AnimationFemaleWalk,
+	
+	ANIMATION_ID_COUNT,
+};
+
 enum ShaderID {
 	ShaderDebug,
 	
@@ -74,3 +80,4 @@ enum ShaderID {
 void InitMesh(MeshID meshID, char *fileName, TempMemory *tempMemory);
 void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory);
 Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory);
+Animation InitAnimation(char *fileName, GameStack *stack);

@@ -11,11 +11,12 @@ struct Player {
 };
 
 struct GameState {
-	f32 deltaTime;
-	
 	Player player;
 	
 	Skeleton skeletons[SKELETON_ID_COUNT];
+	Animation animations[ANIMATION_ID_COUNT];
+	
+	GameStack assetsStack;
 };
 
 struct InputKey
@@ -39,6 +40,8 @@ enum KeyType
 
 struct GameInput
 {
+	f32 deltaTime;
+	
 	v2i mousePos;
     v2i mouseDelta;
 	i16 wheelDelta;
@@ -83,5 +86,5 @@ inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 	return 0;
 }
 
-void GameInit(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory);
-void GameUpdate(GameState *gameState, GameInput *gameInput, TempMemory *tempMemory);
+void GameInit(GameStack *mainStack, TempMemory *tempMemory);
+void GameUpdate(GameStack *mainStack, GameInput *gameInput, f32 deltaTime, TempMemory *tempMemory);
