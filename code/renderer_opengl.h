@@ -59,10 +59,12 @@ struct MeshInfo {
 
 struct ShaderInfo {
 	GLuint programID;
+	
 	GLuint uniformModelView;
 	GLuint uniformViewProjection;
-	GLuint attribVertexPosition;
-	GLuint attribVertexColor;
+	
+	GLuint uniforms[8];
+	GLuint attribs[8];
 };
 
 struct RenderState {

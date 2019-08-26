@@ -73,6 +73,7 @@ enum AnimationID {
 
 enum ShaderID {
 	ShaderDebug,
+	ShaderSkin,
 	
 	SHADER_ID_COUNT,
 };

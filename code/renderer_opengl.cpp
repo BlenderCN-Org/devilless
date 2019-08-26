@@ -30,7 +30,7 @@ _glGetProgramInfoLog *glGetProgramInfoLog;
 RenderState renderState = {};
 
 
-void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCode, char *fragmentCode)
+void CreateProgram(ShaderInfo *shaderInfo, MemoryInfo vertexShaderMI, MemoryInfo fragmentShaderMI)
 {
     GLint result = GL_FALSE;
     i32 infoLogLength = 0;
@@ -38,12 +38,11 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     
     // vertex shader
     GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-    GLchar *vertexShaderCode[] = {
-        headerCode,
-        vertexCode,
-    };
+	
+    GLchar *vertexShaderSources[] = { (GLchar *)vertexShaderMI.base };
+	GLint vertexSourceLengths[] = { (GLint)vertexShaderMI.size };
     
-    glShaderSource(vertexShaderID, sizeof(vertexShaderCode) / sizeof(vertexShaderCode[0]), vertexShaderCode, 0);
+    glShaderSource(vertexShaderID, 1, vertexShaderSources, vertexSourceLengths);
     glCompileShader(vertexShaderID);
     
     glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &result);
@@ -51,8 +50,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &buffer[0]);
-		//printf("error in vertex shader code\n");
-		//printf(buffer);
+		printf("error in vertex shader code\n");
+		printf(buffer);
         
         Assert(!"failed to compile vertex shader");
     }
@@ -60,11 +59,11 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     
     // fragment shader
     GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-    GLchar *fragmentShaderCode[] = {
-        headerCode,
-        fragmentCode,
-    };
-    glShaderSource(fragmentShaderID, sizeof(fragmentShaderCode) / sizeof(fragmentShaderCode[0]), fragmentShaderCode, 0);
+	
+    GLchar *fragmentShaderSources[] = { (GLchar *)fragmentShaderMI.base };
+	GLint fragmentSourceLengths[] = { (GLint)fragmentShaderMI.size };
+	
+    glShaderSource(fragmentShaderID, 1, fragmentShaderSources, fragmentSourceLengths);
     glCompileShader(fragmentShaderID);
     
     glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &result);
@@ -72,8 +71,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &buffer[0]);
-		//printf("error in fragment shader code\n");
-        //printf(buffer);
+		printf("error in fragment shader code\n");
+        printf(buffer);
         
         Assert(!"failed to compile fragment shader");
     }
@@ -90,8 +89,8 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     if (infoLogLength > 0){
         char buffer[4096];
         glGetProgramInfoLog(programID, infoLogLength, NULL, &buffer[0]);
-		//printf("error in shader code\n");
-        //printf(buffer);
+		printf("error in shader code\n");
+        printf(buffer);
         
         Assert(!"failed to compile fragment shader");
     }
@@ -100,42 +99,25 @@ void CreateOpenGLShader(ShaderInfo *shaderInfo, char *headerCode, char *vertexCo
     glDeleteShader(fragmentShaderID);
 	
 	shaderInfo->programID = programID;
-	shaderInfo->uniformModelView = glGetUniformLocation(programID, "modelView");
-	shaderInfo->uniformViewProjection = glGetUniformLocation(programID, "viewProjection");
-	shaderInfo->attribVertexPosition = glGetAttribLocation(programID, "vertexPosition");
-	shaderInfo->attribVertexColor = glGetAttribLocation(programID, "vertexColor");
 }
 
-void InitShader(ShaderID shaderID) {
-	char *headerCode = (char *)R"AZBD(
-	#version 110
-	)AZBD";
-    
-    char *vertexCode = (char *)R"AZBD(
-	uniform mat4 modelView;
-	uniform mat4 viewProjection;
+void InitShader(ShaderID shaderID, TempMemory *tempMemory) {
+	TempMemoryPush(tempMemory);
 	
-    attribute vec3 vertexPosition;
-	attribute vec3 vertexColor;
- 
-	varying vec3 fragmentColor;
-    
-    void main() {
-		fragmentColor = vertexColor;
-		gl_Position = vec4(vertexPosition, 1.0) * modelView * viewProjection;
-    }
-    
-    )AZBD";
-    
-    char *fragmentCode = (char *)R"AZBD(
-    varying vec3 fragmentColor;
-    
-    void main() {
-        gl_FragColor = vec4(fragmentColor, 1.0);
-    }
-    
-    )AZBD";
-    CreateOpenGLShader(&renderState.shaderInfos[shaderID], headerCode, vertexCode, fragmentCode);
+	MemoryInfo vertexShaderMI = PushFile(&tempMemory->stack, "assets/shaders/opengl/debug_vertex.glsl");
+	MemoryInfo fragmentShaderMI = PushFile(&tempMemory->stack, "assets/shaders/opengl/debug_fragment.glsl");
+	
+	ShaderInfo *shaderInfo = &renderState.shaderInfos[shaderID];
+	
+    CreateProgram(shaderInfo, vertexShaderMI, fragmentShaderMI);
+	
+	shaderInfo->uniformModelView = glGetUniformLocation(shaderInfo->programID, "modelView");
+	shaderInfo->uniformViewProjection = glGetUniformLocation(shaderInfo->programID, "viewProjection");
+	
+	shaderInfo->attribs[0] = glGetAttribLocation(shaderInfo->programID, "vertexPosition");
+	shaderInfo->attribs[1] = glGetAttribLocation(shaderInfo->programID, "vertexNormal");
+	
+	TempMemoryPop(tempMemory);
 }
 
 void InitMeshBuffers(MeshID meshID, void *vertices, u32 vertexCount, void *indices, u32 indexCount) {
@@ -178,11 +160,11 @@ void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
 
-	glEnableVertexAttribArray(shaderInfo->attribVertexPosition);
-	glEnableVertexAttribArray(shaderInfo->attribVertexColor);
+	glEnableVertexAttribArray(shaderInfo->attribs[0]);
+	glEnableVertexAttribArray(shaderInfo->attribs[1]);
 	
-	glVertexAttribPointer(shaderInfo->attribVertexPosition, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(shaderInfo->attribVertexColor, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
+	glVertexAttribPointer(shaderInfo->attribs[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(shaderInfo->attribs[1], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
 	
 	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
 }

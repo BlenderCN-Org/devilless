@@ -40,4 +40,5 @@ devilless
 .vscode
 
 # Assets
-assets
+assets/*
+!assets/shaders

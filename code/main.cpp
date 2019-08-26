@@ -31,7 +31,7 @@ void GameInit(GameStack *mainStack, TempMemory *tempMemory) {
 	
 	InitStack(&gameState->assetsStack, PushMemoryInfo(mainStack, Megabytes(200)));
 	
-	InitShader(ShaderDebug);
+	InitShader(ShaderDebug, tempMemory);
 	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
 	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
 	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/female.skel", tempMemory);
