@@ -23,7 +23,7 @@ void InitMesh(MeshID meshID, char *fileName, TempMemory *tempMemory) {
 	void *indices = tail;
 	tail += sizeof(u16) * indexCount;
 	
-	InitMeshBuffers(meshID, vertices, vertexCount, indices, indexCount);
+	InitMeshBuffers(meshID, vertices, vertexCount * sizeof(Vertex), indices, indexCount);
 	
 	TempMemoryPop(tempMemory);
 }
@@ -47,7 +47,7 @@ void InitSkin(SkinID skinID, char *fileName, TempMemory *tempMemory) {
 	void *indices = tail;
 	tail += sizeof(u16) * indexCount;
 	
-	InitSkinBuffers(skinID, vertices, vertexCount, indices, indexCount);
+	InitSkinBuffers(skinID, vertices, vertexCount * sizeof(SkinVertex), indices, indexCount);
 	
 	TempMemoryPop(tempMemory);
 }
@@ -95,8 +95,6 @@ Animation InitAnimation(char *fileName, GameStack *stack) {
 	u8 *tail = (u8 *)result.base;
 	u32 boneCount = *((u32 *)tail);
 	tail += sizeof(u32);
-	
-	Assert(boneCount == BONE_COUNT);
 	
 	for (i32 i = 0; i < BONE_COUNT; i++) {
 		animation.keys[i] = ((AnimationKey *)tail);

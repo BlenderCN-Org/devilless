@@ -30,12 +30,22 @@ _glGetProgramInfoLog *glGetProgramInfoLog;
 RenderState renderState = {};
 
 
+void CheckOpenGLErrors(GLint shaderID, char *errorMessage) {
+	i32 infoLogLength = 0;
+	
+    glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 0){
+        char buffer[4096];
+        glGetShaderInfoLog(shaderID, infoLogLength, NULL, &buffer[0]);
+		printf(errorMessage);
+		printf(buffer);
+        
+        Assert(!"OpenGL Error, check console for details");
+    }
+}
+
 void CreateProgram(ShaderInfo *shaderInfo, MemoryInfo vertexShaderMI, MemoryInfo fragmentShaderMI)
 {
-    GLint result = GL_FALSE;
-    i32 infoLogLength = 0;
-
-    
     // vertex shader
     GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	
@@ -44,18 +54,7 @@ void CreateProgram(ShaderInfo *shaderInfo, MemoryInfo vertexShaderMI, MemoryInfo
     
     glShaderSource(vertexShaderID, 1, vertexShaderSources, vertexSourceLengths);
     glCompileShader(vertexShaderID);
-    
-    glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &result);
-    glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-    if (infoLogLength > 0){
-        char buffer[4096];
-        glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &buffer[0]);
-		printf("error in vertex shader code\n");
-		printf(buffer);
-        
-        Assert(!"failed to compile vertex shader");
-    }
-    
+	CheckOpenGLErrors(vertexShaderID, "Error in vertex shader code\n");
     
     // fragment shader
     GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -65,35 +64,14 @@ void CreateProgram(ShaderInfo *shaderInfo, MemoryInfo vertexShaderMI, MemoryInfo
 	
     glShaderSource(fragmentShaderID, 1, fragmentShaderSources, fragmentSourceLengths);
     glCompileShader(fragmentShaderID);
+    CheckOpenGLErrors(fragmentShaderID, "Error in fragment shader code\n");
     
-    glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &result);
-    glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-    if (infoLogLength > 0){
-        char buffer[4096];
-        glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &buffer[0]);
-		printf("error in fragment shader code\n");
-        printf(buffer);
-        
-        Assert(!"failed to compile fragment shader");
-    }
-    
-    
-    // shader
+    // shader linking
     GLuint programID = glCreateProgram();
     glAttachShader(programID, vertexShaderID);
     glAttachShader(programID, fragmentShaderID);
     glLinkProgram(programID);
-    
-    glGetProgramiv(programID, GL_LINK_STATUS, &result);
-    glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-    if (infoLogLength > 0){
-        char buffer[4096];
-        glGetProgramInfoLog(programID, infoLogLength, NULL, &buffer[0]);
-		printf("error in shader code\n");
-        printf(buffer);
-        
-        Assert(!"failed to compile fragment shader");
-    }
+	CheckOpenGLErrors(programID, "error in linking shader\n");
     
     glDeleteShader(vertexShaderID);
     glDeleteShader(fragmentShaderID);
@@ -120,32 +98,27 @@ void InitShader(ShaderID shaderID, TempMemory *tempMemory) {
 	TempMemoryPop(tempMemory);
 }
 
-void InitMeshBuffers(MeshID meshID, void *vertices, u32 vertexCount, void *indices, u32 indexCount) {
-	MeshInfo *meshInfo = &renderState.meshInfos[meshID];
+void InternalInitMeshBuffers(MeshInfo *meshInfo, void *vertices, u32 verticesSize, void *indices, u32 indexCount) {
 	meshInfo->indexCount = indexCount;
 	
 	glGenBuffers(1, &meshInfo->vertexVBO);
     glGenBuffers(1, &meshInfo->indexVBO);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexCount, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u16) * indexCount, indices, GL_STATIC_DRAW);
 }
 
-void InitSkinBuffers(SkinID skinID, void *vertices, u32 vertexCount, void *indices, u32 indexCount) {
+void InitMeshBuffers(MeshID meshID, void *vertices, u32 verticesSize, void *indices, u32 indexCount) {
+	MeshInfo *meshInfo = &renderState.meshInfos[meshID];
+	InternalInitMeshBuffers(meshInfo, vertices, verticesSize, indices, indexCount);
+}
+
+void InitSkinBuffers(SkinID skinID, void *vertices, u32 verticesSize, void *indices, u32 indexCount) {
 	MeshInfo *meshInfo = &renderState.skinInfos[skinID];
-	meshInfo->indexCount = indexCount;
-	
-	glGenBuffers(1, &meshInfo->vertexVBO);
-	glGenBuffers(1, &meshInfo->indexVBO);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(SkinVertex) * vertexCount, vertices, GL_STATIC_DRAW);
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u16) * indexCount, indices, GL_STATIC_DRAW);
+	InternalInitMeshBuffers(meshInfo, vertices, verticesSize, indices, indexCount);
 }
 
 void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
