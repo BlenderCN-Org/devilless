@@ -246,7 +246,6 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	TempMemory tempMemory = {};
 	
 	InitStack(&mainStack, Alloc(Megabytes(600)));
-	
 	InitStack(&tempMemory.stack, Alloc(Megabytes(150)));
 	
 	InitInput(&gameInput);

@@ -76,6 +76,5 @@ bool InitRenderer() {
 }
 
 void PresentFrame() {
-	
 	SwapBuffers(winState.windowDC);
 }
