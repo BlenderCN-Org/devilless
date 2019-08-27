@@ -1,5 +1,6 @@
 
 #include "renderer_opengl.h"
+#include "game_math.h"
 #include "main.h"
 
 _glGenBuffers *glGenBuffers;
@@ -79,11 +80,11 @@ void CreateProgram(ShaderInfo *shaderInfo, MemoryInfo vertexShaderMI, MemoryInfo
 	shaderInfo->programID = programID;
 }
 
-void InitShader(ShaderID shaderID, TempMemory *tempMemory) {
+void InitShader(ShaderID shaderID, char *vertexFileName, char *fragmentFileName, ShaderDesc shaderDesc, TempMemory *tempMemory) {
 	TempMemoryPush(tempMemory);
 	
-	MemoryInfo vertexShaderMI = PushFile(&tempMemory->stack, "assets/shaders/opengl/debug_vertex.glsl");
-	MemoryInfo fragmentShaderMI = PushFile(&tempMemory->stack, "assets/shaders/opengl/debug_fragment.glsl");
+	MemoryInfo vertexShaderMI = PushFile(&tempMemory->stack, vertexFileName);
+	MemoryInfo fragmentShaderMI = PushFile(&tempMemory->stack, fragmentFileName);
 	
 	ShaderInfo *shaderInfo = &renderState.shaderInfos[shaderID];
 	
@@ -92,10 +93,39 @@ void InitShader(ShaderID shaderID, TempMemory *tempMemory) {
 	shaderInfo->uniformModelView = glGetUniformLocation(shaderInfo->programID, "modelView");
 	shaderInfo->uniformViewProjection = glGetUniformLocation(shaderInfo->programID, "viewProjection");
 	
-	shaderInfo->attribs[0] = glGetAttribLocation(shaderInfo->programID, "vertexPosition");
-	shaderInfo->attribs[1] = glGetAttribLocation(shaderInfo->programID, "vertexNormal");
+	for (i32 i = 0; i < ArrayCount(shaderDesc.uniformNames); i++) {
+		if (shaderDesc.uniformNames[i] == 0)
+			break;
+		
+		shaderInfo->uniforms[i] = glGetUniformLocation(shaderInfo->programID, shaderDesc.uniformNames[i]);
+	}
+	
+	for (i32 i = 0; i < ArrayCount(shaderDesc.attribNames); i++) {
+		if (shaderDesc.attribNames[i] == 0)
+			break;
+		
+		shaderInfo->attribs[i] = glGetAttribLocation(shaderInfo->programID, shaderDesc.attribNames[i]);
+	}
 	
 	TempMemoryPop(tempMemory);
+}
+
+void InitShaders(TempMemory *tempMemory) {
+	ShaderDesc shaderDesc = {};
+	shaderDesc.attribNames[0] = "vertexPosition";
+	shaderDesc.attribNames[1] = "vertexNormal";
+	InitShader(ShaderDebug, "assets/shaders/opengl/debug_vertex.glsl", "assets/shaders/opengl/debug_fragment.glsl", shaderDesc, tempMemory);
+	
+	shaderDesc = {};
+	shaderDesc.uniformNames[0] = "materials";
+	shaderDesc.uniformNames[1] = "bones";
+	
+	shaderDesc.attribNames[0] = "vertexPosition";
+	shaderDesc.attribNames[1] = "vertexNormal";
+	shaderDesc.attribNames[2] = "vertexMaterialID";
+	shaderDesc.attribNames[3] = "vertexBoneID";
+	shaderDesc.attribNames[4] = "vertexBoneWeight";
+	InitShader(ShaderSkin, "assets/shaders/opengl/skin_vertex.glsl", "assets/shaders/opengl/debug_fragment.glsl", shaderDesc, tempMemory);
 }
 
 void InternalInitMeshBuffers(MeshInfo *meshInfo, void *vertices, u32 verticesSize, void *indices, u32 indexCount) {
@@ -138,6 +168,42 @@ void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	
 	glVertexAttribPointer(shaderInfo->attribs[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glVertexAttribPointer(shaderInfo->attribs[1], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(v3)));
+	
+	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
+}
+
+void RenderSkin(SkinID skinID, m4 modelView, m4 viewProjection) {
+	const MeshInfo *meshInfo = &renderState.skinInfos[skinID];
+	const ShaderInfo *shaderInfo = &renderState.shaderInfos[ShaderSkin];
+	
+	glUseProgram(shaderInfo->programID);
+	
+	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	
+	m4 bones[BONE_COUNT] = {};
+	
+	for (i32 i = 0; i < BONE_COUNT; i++) {
+		bones[i] = M4Identity();
+	}
+	bones[0] = M4(20, 0, 0);
+	
+	glUniformMatrix4fv(shaderInfo->uniforms[1], BONE_COUNT, GL_FALSE, &bones[0].e[0][0]);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
+
+	glEnableVertexAttribArray(shaderInfo->attribs[0]);
+	glEnableVertexAttribArray(shaderInfo->attribs[1]);
+	
+	u8 offset = 0;
+	glVertexAttribPointer(shaderInfo->attribs[0], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
+	offset += sizeof(v3);
+	glVertexAttribPointer(shaderInfo->attribs[1], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
+	offset += sizeof(v3);
+	glVertexAttribPointer(shaderInfo->attribs[3], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
+	offset += sizeof(v3);
+	glVertexAttribPointer(shaderInfo->attribs[4], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
 	
 	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
 }

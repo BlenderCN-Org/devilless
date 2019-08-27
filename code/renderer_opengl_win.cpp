@@ -42,7 +42,7 @@ void SetVSync(bool on) {
 		wglSwapIntervalExt(on);
 }
 
-bool InitRenderer() {
+bool InitRenderer(TempMemory *tempMemory) {
 	PIXELFORMATDESCRIPTOR pfd = {};
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
     pfd.nVersion = 1;
@@ -71,6 +71,8 @@ bool InitRenderer() {
     char *GL_renderer=(char *)glGetString(GL_RENDERER);
 	
 	printf("ver: %s, ven: %s, ren: %s\n", GL_version, GL_vendor, GL_renderer);
+	
+	InitShaders(tempMemory);
 	
 	return 1;
 }

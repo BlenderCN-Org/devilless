@@ -16,6 +16,7 @@ struct Vertex {
 struct SkinVertex {
 	v3 position;
 	v3 normal;
+	//i32 materialID;
 	i32 groupIDs[3];
 	f32 groupWeights[3];
 };

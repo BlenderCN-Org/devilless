@@ -31,7 +31,6 @@ void GameInit(GameStack *mainStack, TempMemory *tempMemory) {
 	
 	InitStack(&gameState->assetsStack, PushMemoryInfo(mainStack, Megabytes(200)));
 	
-	InitShader(ShaderDebug, tempMemory);
 	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
 	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
 	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/female.skel", tempMemory);
@@ -47,6 +46,7 @@ void GameUpdate(GameStack *mainStack, GameInput *gameInput, f32 deltaTime, TempM
 	v2i screenSize = GetScreenSize();
 	m4 vp = M4(-gameState->player.position) * M4RotY(-gameState->player.yaw) * M4RotX(-gameState->player.pitch) * ProjectionMatrix((f32)screenSize.x / (f32)screenSize.y);
 	RenderMesh(MeshGirl, M4Identity(), vp);
+	RenderSkin(SkinFemale, M4(1.0f, 0, 0), vp);
 	
 	Assert(tempMemory->tempCount == 0);
 }

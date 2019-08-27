@@ -239,7 +239,6 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	if (!InitWin())
 		return 1;
 	
-	InitRenderer();
 	
 	GameStack mainStack = {};
 	GameInput gameInput = {};
@@ -248,8 +247,8 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	InitStack(&mainStack, Alloc(Megabytes(600)));
 	InitStack(&tempMemory.stack, Alloc(Megabytes(150)));
 	
+	InitRenderer(&tempMemory);
 	InitInput(&gameInput);
-	
 	GameInit(&mainStack, &tempMemory);
 	
 	LARGE_INTEGER countFrequency;

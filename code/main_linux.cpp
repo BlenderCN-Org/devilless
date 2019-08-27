@@ -191,7 +191,6 @@ int main() {
 	if (!InitX())
 		return 1;
 	
-	InitRenderer();
 	
 	GameStack mainStack = {};
 	GameInput gameInput = {};
@@ -200,8 +199,8 @@ int main() {
 	InitStack(&mainStack, Alloc(Megabytes(600)));
 	InitStack(&tempMemory.stack, Alloc(Megabytes(150)));
 	
+	InitRenderer(&tempMemory);
 	InitInput(&gameInput);
-	
 	GameInit(&mainStack, &tempMemory);
 	
 	timeval timeVal;

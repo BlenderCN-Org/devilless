@@ -5,6 +5,8 @@
 #include "common.h"
 #include "asset_manager.h"
 
+void InitShaders(TempMemory *tempMemory);
+
 typedef void _glGenBuffers(GLsizei n, GLuint * buffers);
 extern _glGenBuffers *glGenBuffers;
 typedef void _glBindBuffer(GLenum target, GLuint _buffer);
@@ -55,6 +57,11 @@ struct MeshInfo {
 	
 	GLuint vertexVBO;
 	GLuint indexVBO;
+};
+
+struct ShaderDesc {
+	char *uniformNames[8];
+	char *attribNames[8];
 };
 
 struct ShaderInfo {

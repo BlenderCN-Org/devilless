@@ -52,7 +52,7 @@ void SetVSync(bool on) {
 		glXSwapIntervalSGI(on);
 }
 
-void InitRenderer() {
+void InitRenderer(TempMemory *tempMemory) {
 	char *GL_version=(char *)glGetString(GL_VERSION);
     char *GL_vendor=(char *)glGetString(GL_VENDOR);
     char *GL_renderer=(char *)glGetString(GL_RENDERER);
@@ -61,6 +61,8 @@ void InitRenderer() {
 	
 	InitGLExtensions();
 	SetVSync(1);
+	
+	InitShaders(tempMemory);
 }
 
 void PresentFrame() {
