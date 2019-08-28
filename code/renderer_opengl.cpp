@@ -2,6 +2,7 @@
 #include "renderer_opengl.h"
 #include "game_math.h"
 #include "main.h"
+#include "renderer.h"
 
 _glGenBuffers *glGenBuffers;
 _glBindBuffer *glBindBuffer;
@@ -123,8 +124,8 @@ void InitShaders(TempMemory *tempMemory) {
 	shaderDesc.attribNames[0] = "vertexPosition";
 	shaderDesc.attribNames[1] = "vertexNormal";
 	shaderDesc.attribNames[2] = "vertexMaterialID";
-	shaderDesc.attribNames[3] = "vertexBoneID";
-	shaderDesc.attribNames[4] = "vertexBoneWeight";
+	shaderDesc.attribNames[3] = "vertexBoneIDs";
+	shaderDesc.attribNames[4] = "vertexBoneWeights";
 	InitShader(ShaderSkin, "assets/shaders/opengl/skin_vertex.glsl", "assets/shaders/opengl/debug_fragment.glsl", shaderDesc, tempMemory);
 }
 
@@ -151,14 +152,14 @@ void InitSkinBuffers(SkinID skinID, void *vertices, u32 verticesSize, void *indi
 	InternalInitMeshBuffers(meshInfo, vertices, verticesSize, indices, indexCount);
 }
 
-void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
+void RenderMesh(MeshID meshID, MeshBuffer *meshBuffer) {
 	const MeshInfo *meshInfo = &renderState.meshInfos[meshID];
 	const ShaderInfo *shaderInfo = &renderState.shaderInfos[ShaderDebug];
 	
 	glUseProgram(shaderInfo->programID);
 	
-	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
-	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &meshBuffer->modelView.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &meshBuffer->viewProjection.e[0][0]);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
@@ -172,29 +173,24 @@ void RenderMesh(MeshID meshID, m4 modelView, m4 viewProjection) {
 	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
 }
 
-void RenderSkin(SkinID skinID, m4 modelView, m4 viewProjection) {
+void RenderSkin(SkinID skinID, SkinBuffer *skinBuffer) {
 	const MeshInfo *meshInfo = &renderState.skinInfos[skinID];
 	const ShaderInfo *shaderInfo = &renderState.shaderInfos[ShaderSkin];
 	
 	glUseProgram(shaderInfo->programID);
 	
-	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &modelView.e[0][0]);
-	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &viewProjection.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformModelView, 1, GL_FALSE, &skinBuffer->modelView.e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniformViewProjection, 1, GL_FALSE, &skinBuffer->viewProjection.e[0][0]);
 	
-	m4 bones[BONE_COUNT] = {};
-	
-	for (i32 i = 0; i < BONE_COUNT; i++) {
-		bones[i] = M4Identity();
-	}
-	bones[0] = M4(20, 0, 0);
-	
-	glUniformMatrix4fv(shaderInfo->uniforms[1], BONE_COUNT, GL_FALSE, &bones[0].e[0][0]);
+	glUniformMatrix4fv(shaderInfo->uniforms[1], BONE_COUNT, GL_FALSE, &skinBuffer->bones[0].e[0][0]);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vertexVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->indexVBO);
 
 	glEnableVertexAttribArray(shaderInfo->attribs[0]);
 	glEnableVertexAttribArray(shaderInfo->attribs[1]);
+	glEnableVertexAttribArray(shaderInfo->attribs[3]);
+	glEnableVertexAttribArray(shaderInfo->attribs[4]);
 	
 	u8 offset = 0;
 	glVertexAttribPointer(shaderInfo->attribs[0], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);

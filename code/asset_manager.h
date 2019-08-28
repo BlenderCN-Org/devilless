@@ -21,13 +21,15 @@ struct SkinVertex {
 	f32 groupWeights[3];
 };
 
+#pragma pack(push, 1)
 struct AnimationKey
 {
-	m4 transform;
 	f32 time;
+	m4 transform;
 	//v3 position;
 	//quat rotation;
 };
+#pragma pack(pop)
 
 struct Animation
 {
