@@ -16,8 +16,8 @@ struct Vertex {
 struct SkinVertex {
 	v3 position;
 	v3 normal;
-	//i32 materialID;
-	i32 groupIDs[3];
+	//f32 materialID;
+	f32 groupIDs[3];
 	f32 groupWeights[3];
 };
 
@@ -40,7 +40,7 @@ struct Animation
 struct Child
 {
 	i32 childCount;
-	i32 childIDs[4];
+	i32 childIDs[5];
 };
 
 struct Skeleton

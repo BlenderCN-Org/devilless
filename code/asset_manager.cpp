@@ -73,7 +73,7 @@ Skeleton InitSkeleton(char *fileName, TempMemory *tempMemory) {
 		skeleton.children[i].childCount = *((i32 *)tail);
 		tail += sizeof(i32);
 		
-		Assert(skeleton.children[i].childCount <= 4);
+		Assert(skeleton.children[i].childCount <= 5);
 		
 		for (i32 j = 0; j < skeleton.children[i].childCount; j++) {
 			skeleton.children[i].childIDs[j] = *((i32 *)tail);

@@ -60,7 +60,7 @@ void InitInput(GameInput *gameInput) {
 	gameInput->keyMap[KeyDown] = 'S';
 	gameInput->keyMap[KeyLeft] = 'A';
 	gameInput->keyMap[KeyRight] = 'D';
-	gameInput->keyMap[KeyRun] = VK_LSHIFT;
+	gameInput->keyMap[KeyRun] = VK_SHIFT;
 	gameInput->keyMap[KeyPause] = VK_ESCAPE;
 }
 
@@ -115,6 +115,13 @@ LRESULT CALLBACK MainWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM
     }
     
     return result;
+}
+
+void ClearInput(GameInput *gameInput) {
+	for (u32 i = 0; i < ArrayCount(gameInput->keys); i++) {
+		gameInput->keys[i].count = 0;
+		gameInput->keys[i].isDown = 0;
+	}
 }
 
 void ProcessInput(InputKey *inputKey, bool isDown)
@@ -249,7 +256,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 	
 	InitRenderer(&tempMemory);
 	InitInput(&gameInput);
-	GameInit(&mainStack, &tempMemory);
+	InitGame(&mainStack, &gameInput, &tempMemory);
 	
 	LARGE_INTEGER countFrequency;
 	QueryPerformanceFrequency(&countFrequency);
@@ -265,16 +272,36 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 			gameInput.keys[i].count = 0;
 		}
 		
+		gameInput.mouseDelta = {};
+		
 		ProcessMessages(&gameInput);
 		
-		/*if (activeWindow)
+		if (GetActiveWindow() == winState.window)
 		{
-			gameInput->mousePos = ;
+			POINT mouseP;
+			GetCursorPos(&mouseP);
+			ScreenToClient(winState.window, &mouseP);
+			
+			RECT rect;
+			GetClientRect(winState.window, &rect);
+			
+			POINT centerPoint = {rect.right / 2, rect.bottom / 2};
+			ClientToScreen(winState.window, &centerPoint);
+			
+			if (gameInput.mouseLocked)
+			{
+				gameInput.mouseDelta.x = (mouseP.x - (rect.right / 2)) * 0.001f;
+				gameInput.mouseDelta.y = (mouseP.y - (rect.bottom / 2)) * 0.001f;
+				
+				SetCursorPos(centerPoint.x, centerPoint.y);
+			} else {
+				gameInput.mousePos = V2I(mouseP.x, mouseP.y);
+			}
 		}
 		else
 		{
-			ClearInput();
-		}*/
+			ClearInput(&gameInput);
+		}
 		
 		
 		ClearFrame();
@@ -288,7 +315,7 @@ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLi
 		
 		u64 counterElapsed = frameFinishCounter.QuadPart - frameStartCounter.QuadPart;
 		deltaTime = Min(0.05f, (f32)counterElapsed / (f32)countFrequency.QuadPart);
-		//printf("%f\n", gameState.deltaTime);
+		printf("%f\n", deltaTime);
 		
 		frameStartCounter = frameFinishCounter;
 	}

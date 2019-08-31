@@ -6,6 +6,9 @@
 #include "animation.h"
 
 void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
+	player->yaw -= gameInput->mouseDelta.x;
+	player->pitch -= gameInput->mouseDelta.y;
+	
 	v2 input = {};
 	
 	if (KeyWasDown(KeyUp, gameInput))
@@ -19,25 +22,27 @@ void UpdatePlayer(Player *player, f32 dt, GameInput *gameInput) {
 	
 	input = MaxLength1(input);
 	
-	f32 speed = 100.0f + KeyWasDown(KeyRun, gameInput) ? 35.0f : 0.0f;
-	player->velocity += V3(input.x, 0.0f, input.y) * speed * dt;
+	f32 speed = 45.0f + (KeyWasDown(KeyRun, gameInput) ? 35.0f : 0.0f);
+	player->velocity += V3RotateY(player->yaw, input.x, input.y) * speed * dt;
 	
-	player->velocity /= 1.0f + 23.0f * dt;
+	player->velocity /= 1.0f + 12.88f * dt;
 	
 	player->position += player->velocity * dt;
 }
 
-void GameInit(GameStack *mainStack, TempMemory *tempMemory) {
+void InitGame(GameStack *mainStack, GameInput *gameInput, TempMemory *tempMemory) {
 	GameState *gameState = PushStruct(mainStack, GameState);
 	
 	InitStack(&gameState->assetsStack, PushMemoryInfo(mainStack, Megabytes(200)));
 	
 	InitMesh(MeshGirl, "assets/girl.mesh", tempMemory);
-	InitSkin(SkinFemale, "assets/hoodie.skin", tempMemory);
-	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/player.skel", tempMemory);
-	gameState->animations[AnimationFemaleWalk] = InitAnimation("assets/idle.anim", &gameState->assetsStack);
+	InitSkin(SkinFemale, "assets/female.skin", tempMemory);
+	gameState->skeletons[SkeletonFemale] = InitSkeleton("assets/female.skel", tempMemory);
+	gameState->animations[AnimationFemaleWalk] = InitAnimation("assets/female_idle.anim", &gameState->assetsStack);
 	
 	gameState->player.position = V3(0.0f, 1.8f, 0.0f);
+	
+	//gameInput->mouseLocked = 1;
 	
 	Assert(tempMemory->tempCount == 0);
 }

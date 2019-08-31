@@ -1154,7 +1154,7 @@ inline m4 OrthoMatrix(f32 l, f32 b, f32 r, f32 t, f32 n, f32 f)
 
 inline m4 ProjectionMatrix(f32 aspectRatio)
 {
-	f32 fov = 94.0f;
+	f32 fov = 74.0f;
 	f32 nearPlane = 0.01f;
 	//f32 farPlane = 200.0f;
 	

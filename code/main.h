@@ -43,8 +43,10 @@ struct GameInput
 	f32 deltaTime;
 	
 	v2i mousePos;
-    v2i mouseDelta;
+    v2 mouseDelta;
 	i16 wheelDelta;
+	
+	bool mouseLocked;
 	
 	u8 keyMap[KEY_TYPE_COUNT];
 	InputKey keys[256];
@@ -86,5 +88,5 @@ inline bool KeyWasReleased(KeyType keyCode, GameInput *gameInput)
 	return 0;
 }
 
-void GameInit(GameStack *mainStack, TempMemory *tempMemory);
+void InitGame(GameStack *mainStack, GameInput *gameInput, TempMemory *tempMemory);
 void GameUpdate(GameStack *mainStack, GameInput *gameInput, f32 deltaTime, TempMemory *tempMemory);

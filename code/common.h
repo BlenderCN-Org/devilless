@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define BONE_COUNT 34
+#define BONE_COUNT 37
 
 typedef int8_t i8;
 typedef uint8_t u8;

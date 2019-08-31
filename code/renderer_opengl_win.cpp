@@ -64,7 +64,7 @@ bool InitRenderer(TempMemory *tempMemory) {
 	
 	InitGLExtensions();
 	
-	SetVSync(1);
+	SetVSync(0);
 	
 	char *GL_version=(char *)glGetString(GL_VERSION);
     char *GL_vendor=(char *)glGetString(GL_VENDOR);

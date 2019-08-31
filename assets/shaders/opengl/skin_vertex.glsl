@@ -3,7 +3,7 @@
 uniform mat4 modelView;
 uniform mat4 viewProjection;
 uniform vec4 materials[4];
-uniform mat4 bones[34];
+uniform mat4 bones[37];
 
 attribute vec3 vertexPosition;
 attribute vec3 vertexNormal;
