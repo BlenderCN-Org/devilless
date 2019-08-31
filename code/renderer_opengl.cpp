@@ -94,14 +94,14 @@ void InitShader(ShaderID shaderID, char *vertexFileName, char *fragmentFileName,
 	shaderInfo->uniformModelView = glGetUniformLocation(shaderInfo->programID, "modelView");
 	shaderInfo->uniformViewProjection = glGetUniformLocation(shaderInfo->programID, "viewProjection");
 	
-	for (i32 i = 0; i < ArrayCount(shaderDesc.uniformNames); i++) {
+	for (u32 i = 0; i < ArrayCount(shaderDesc.uniformNames); i++) {
 		if (shaderDesc.uniformNames[i] == 0)
 			break;
 		
 		shaderInfo->uniforms[i] = glGetUniformLocation(shaderInfo->programID, shaderDesc.uniformNames[i]);
 	}
 	
-	for (i32 i = 0; i < ArrayCount(shaderDesc.attribNames); i++) {
+	for (u32 i = 0; i < ArrayCount(shaderDesc.attribNames); i++) {
 		if (shaderDesc.attribNames[i] == 0)
 			break;
 		
@@ -195,11 +195,11 @@ void RenderSkin(SkinID skinID, SkinBuffer *skinBuffer) {
 	u8 offset = 0;
 	glVertexAttribPointer(shaderInfo->attribs[0], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
 	offset += sizeof(v3);
-	glVertexAttribPointer(shaderInfo->attribs[1], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
+	glVertexAttribPointer(shaderInfo->attribs[1], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)(uSize)offset);
 	offset += sizeof(v3);
-	glVertexAttribPointer(shaderInfo->attribs[3], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
+	glVertexAttribPointer(shaderInfo->attribs[3], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)(uSize)offset);
 	offset += sizeof(v3);
-	glVertexAttribPointer(shaderInfo->attribs[4], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)offset);
+	glVertexAttribPointer(shaderInfo->attribs[4], 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), (void *)(uSize)offset);
 	
 	glDrawElements(GL_TRIANGLES, meshInfo->indexCount, GL_UNSIGNED_SHORT, 0);
 }
