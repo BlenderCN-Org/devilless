@@ -76,6 +76,13 @@ void InitInput(GameInput *gameInput) {
 	gameInput->keyMap[KeyPause] = XKeysymToKeycode(xState.display, XK_Escape);
 }
 
+void ClearInput(GameInput *gameInput) {
+	for (u32 i = 0; i < ArrayCount(gameInput->keys); i++) {
+		gameInput->keys[i].count = 0;
+		gameInput->keys[i].isDown = 0;
+	}
+}
+
 void ProcessInput(InputKey *inputKey, bool isDown) {
 	if (inputKey->isDown != isDown) {
 		inputKey->isDown = isDown;
